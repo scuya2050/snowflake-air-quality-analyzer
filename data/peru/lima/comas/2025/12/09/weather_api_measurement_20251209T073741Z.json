@@ -1,0 +1,57 @@
+{
+  "location": {
+    "name": "Comas",
+    "region": "Lima",
+    "country": "Peru",
+    "lat": -11.95,
+    "lon": -77.0667,
+    "tz_id": "America/Lima",
+    "localtime_epoch": 1765265861,
+    "localtime": "2025-12-09 02:37"
+  },
+  "current": {
+    "last_updated_epoch": 1765265400,
+    "last_updated": "2025-12-09 02:30",
+    "temp_c": 18.9,
+    "temp_f": 66.1,
+    "is_day": 0,
+    "condition": {
+      "text": "Patchy rain nearby",
+      "icon": "//cdn.weatherapi.com/weather/64x64/night/176.png",
+      "code": 1063
+    },
+    "wind_mph": 7.2,
+    "wind_kph": 11.5,
+    "wind_degree": 170,
+    "wind_dir": "S",
+    "pressure_mb": 1012.0,
+    "pressure_in": 29.9,
+    "precip_mm": 0.01,
+    "precip_in": 0.0,
+    "humidity": 85,
+    "cloud": 83,
+    "feelslike_c": 18.9,
+    "feelslike_f": 66.1,
+    "windchill_c": 18.9,
+    "windchill_f": 66.1,
+    "heatindex_c": 18.9,
+    "heatindex_f": 66.1,
+    "dewpoint_c": 16.3,
+    "dewpoint_f": 61.4,
+    "vis_km": 10.0,
+    "vis_miles": 6.0,
+    "uv": 0.0,
+    "gust_mph": 8.8,
+    "gust_kph": 14.1,
+    "air_quality": {
+      "co": 308.85,
+      "no2": 12.85,
+      "o3": 30.0,
+      "so2": 3.25,
+      "pm2_5": 13.15,
+      "pm10": 17.75,
+      "us-epa-index": 1,
+      "gb-defra-index": 2
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "location": {
+    "name": "Pucusana",
+    "region": "Lima",
+    "country": "Peru",
+    "lat": -12.4833,
+    "lon": -76.8,
+    "tz_id": "America/Lima",
+    "localtime_epoch": 1765265861,
+    "localtime": "2025-12-09 02:37"
+  },
+  "current": {
+    "last_updated_epoch": 1765265400,
+    "last_updated": "2025-12-09 02:30",
+    "temp_c": 17.1,
+    "temp_f": 62.8,
+    "is_day": 0,
+    "condition": {
+      "text": "Cloudy",
+      "icon": "//cdn.weatherapi.com/weather/64x64/night/119.png",
+      "code": 1006
+    },
+    "wind_mph": 4.5,
+    "wind_kph": 7.2,
+    "wind_degree": 170,
+    "wind_dir": "S",
+    "pressure_mb": 1013.0,
+    "pressure_in": 29.9,
+    "precip_mm": 0.0,
+    "precip_in": 0.0,
+    "humidity": 92,
+    "cloud": 66,
+    "feelslike_c": 17.1,
+    "feelslike_f": 62.8,
+    "windchill_c": 17.1,
+    "windchill_f": 62.8,
+    "heatindex_c": 17.1,
+    "heatindex_f": 62.8,
+    "dewpoint_c": 15.8,
+    "dewpoint_f": 60.4,
+    "vis_km": 10.0,
+    "vis_miles": 6.0,
+    "uv": 0.0,
+    "gust_mph": 6.9,
+    "gust_kph": 11.1,
+    "air_quality": {
+      "co": 97.85,
+      "no2": 8.75,
+      "o3": 25.0,
+      "so2": 1.85,
+      "pm2_5": 10.65,
+      "pm10": 14.05,
+      "us-epa-index": 1,
+      "gb-defra-index": 1
+    }
+  }
+}

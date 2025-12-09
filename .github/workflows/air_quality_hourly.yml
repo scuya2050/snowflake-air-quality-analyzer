@@ -1,0 +1,35 @@
+name: lima_air_quality_json
+
+on:
+  schedule:
+     - cron: '35 * * * *'  # Runs at the 35th minute of every hour
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          home_dir=$(pwd)
+          echo $home_dir
+          echo -----------------------------------------------------------------------
+          pip install --upgrade pip    
+          echo -----------------------------------------------------------------------
+          pip install "snowflake-snowpark-python[pandas]"
+          echo -----------------------------------------------------------------------
+          ls -la
+          pwd
+          echo ----------------------------------------------------------------------- 
+
+      - name: Run script with env vars
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          BASE_URL: ${{ vars.API_URL }}
+        run: python api_pull.py

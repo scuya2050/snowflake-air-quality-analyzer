@@ -1,0 +1,38 @@
+# Development Environment Configuration
+
+# Snowflake Connection
+snowflake:
+  account: "your-account.region"  # e.g., "abc12345.us-east-1"
+  user: "dev_user"
+  # Password should be set via environment variable: SNOWFLAKE_PASSWORD
+  role: "SYSADMIN"
+  warehouse: "ADHOC_WH"
+  database: "DEV_DB"
+  schema: "STAGE_SCH"
+
+# Data Loading Configuration
+ingestion:
+  batch_size: 1000
+  max_retries: 3
+  timeout_seconds: 300
+
+# API Configuration
+api:
+  # API key should be set via environment variable: AIR_QUALITY_API_KEY
+  base_url: "https://api.openaq.org/v2"
+  rate_limit_per_minute: 60
+
+# Logging
+logging:
+  level: "DEBUG"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/dev.log"
+
+# Data Quality
+data_quality:
+  enable_validation: true
+  reject_invalid_records: false
+  validation_rules:
+    - check_nulls: true
+    - check_duplicates: true
+    - check_ranges: true

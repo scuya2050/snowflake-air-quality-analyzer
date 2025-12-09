@@ -1,0 +1,44 @@
+# Production Environment Configuration
+
+# Snowflake Connection
+snowflake:
+  account: "your-account.region"  # e.g., "abc12345.us-east-1"
+  user: "prod_user"
+  # Password should be set via environment variable: SNOWFLAKE_PASSWORD
+  role: "SYSADMIN"
+  warehouse: "LOAD_WH"
+  database: "PROD_DB"
+  schema: "STAGE_SCH"
+
+# Data Loading Configuration
+ingestion:
+  batch_size: 5000
+  max_retries: 5
+  timeout_seconds: 600
+
+# API Configuration
+api:
+  # API key should be set via environment variable: AIR_QUALITY_API_KEY
+  base_url: "https://api.openaq.org/v2"
+  rate_limit_per_minute: 100
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/prod.log"
+
+# Data Quality
+data_quality:
+  enable_validation: true
+  reject_invalid_records: true
+  validation_rules:
+    - check_nulls: true
+    - check_duplicates: true
+    - check_ranges: true
+
+# Monitoring
+monitoring:
+  enable_metrics: true
+  alert_on_failure: true
+  email_notifications: "data-team@company.com"
