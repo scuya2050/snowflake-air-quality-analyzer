@@ -1,4 +1,4 @@
-name: lima_air_quality_json
+name: weather_hourly_ingestion
 
 on:
   schedule:
