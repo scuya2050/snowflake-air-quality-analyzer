@@ -3,6 +3,7 @@ name: weather_hourly_ingestion
 on:
   schedule:
      - cron: '35 * * * *'  # Runs at the 35th minute of every hour
+  workflow_dispatch:
 
 jobs:
   build-and-run:
