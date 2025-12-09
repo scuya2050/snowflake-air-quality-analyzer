@@ -1,4 +1,4 @@
-name: weather_hourly_ingestion
+name: weather-hourly-ingestion
 
 on:
   schedule:
@@ -38,4 +38,4 @@ jobs:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
-        run: python api-caller/ingest-weather-api-data.py
+        run: python ingestion/ingest_weather_api_data.py
