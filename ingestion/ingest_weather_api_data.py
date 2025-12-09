@@ -22,6 +22,9 @@ def load_config():
     # Load environment variables first
     api_token = os.getenv("API_TOKEN")
     api_url = os.getenv("API_URL")
+    snowflake_account = os.getenv("SNOWFLAKE_ACCOUNT")
+    snowflake_user = os.getenv("SNOWFLAKE_USER")
+    snowflake_password = os.getenv("SNOWFLAKE_PASSWORD")
 
     # If missing → fallback to .env
     if not api_token or not api_url:
