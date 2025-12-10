@@ -84,13 +84,26 @@ def get_lima_air_quality_data(config):
     except Exception as e:
         logging.error(f'Error connecting to Snowflake: {e}')
         return
+    
+    try:
+        stg_location = f'@dev_db.stage_sch.raw_stg'
+        logging.info(f'Base stage location: {stg_location}')
+        validation_query = f'ls {stg_location}'
+        logging.info(f'Validation stage {stg_location} existence')
+        validation_result = sf_session.sql(validation_query).collect()
+        logging.info(f'Validation complete')
+    except Exception as e:
+        logging.error(f'Error validating stage location {stg_location}: {e}')
+        return
 
-    for d in districts:
+        
+
+    for district in districts:
         try:
             # Query parameters
             params = {
                 "key": {config["API_TOKEN"]},
-                "q": f"{d}, {city}, {country}",
+                "q": f"{district}, {city}, {country}",
                 "aqi": 'yes'
             }
             timestamp = datetime.datetime.now(datetime.timezone.utc)
@@ -103,29 +116,33 @@ def get_lima_air_quality_data(config):
             data = response.json()
 
             file_name = f'weather_api_measurement_{timestamp_string}.json'
-            partition = f'{country.lower().replace(" ", "-")}/{city.lower().replace(" ", "-")}/{d.lower().replace(" ", "-")}/{year}/{month}/{day}/'
+            cnt = country.lower().replace(" ", "_")
+            cty = city.lower().replace(" ", "_")
+            dis = district.lower().replace(" ", "_")
+
+            partition = f'country={cnt}/city={cty}/district={dis}/year={year}/month={month}/day={day}/'
 
             local_file_path = Path.cwd() / 'data' / partition / file_name
             local_file_path.parent.mkdir(parents=True, exist_ok=True)
 
             with open(local_file_path, 'w') as json_file:
                 json.dump(data, json_file, indent=2)
-            # logger.info(f"API call successful for {d}")
+            # logger.info(f"API call successful for {district}")
         except requests.HTTPError as e:
-            logger.warning(f"HTTP Error with {d}: {e}")
+            logger.warning(f"HTTP Error with {district}: {e}")
             continue  # Skip the current iteration and move to the next URL
         except Exception as e:
-            logger.error(f"Unexpected error with {d}: {e}")
+            logger.error(f"Unexpected error with {district}: {e}")
             continue  # Handle other errors and continue with the next URL
 
         try:
-            stg_location = f'@dev_db.stage_sch.raw_stg/{partition}'
+            file_location = f'{stg_location}/{partition}'
             
-            logging.info(f'Placing the file, the file name is {file_name} and stage location is {stg_location}')
-            sf_session.file.put(str(local_file_path), stg_location)
+            logging.info(f'Placing the file, the file name is {file_name} and file location in Snowflake is {file_location}')
+            sf_session.file.put(str(local_file_path), file_location)
             
-            logging.info('JSON File placed successfully in stage location in snowflake')
-            lst_query = f'list {stg_location}{file_name}.gz'
+            logging.info('JSON File placed successfully in stage location in Snowflake')
+            lst_query = f'list {file_location}{file_name}.gz'
             
             logging.info(f'list query to fetch the stage file to check if they exist there or not = {lst_query}')
             result_lst = sf_session.sql(lst_query).collect()
@@ -133,9 +150,10 @@ def get_lima_air_quality_data(config):
             logging.info(f'File is placed in snowflake stage location= {result_lst}')
 
         except Exception as e:
-            logger.error(f"Snowflake upload failed  for {d}: {e}")
+            logger.error(f"Snowflake upload failed  for {district}: {e}")
     
     logger.info("Data ingestion completed.")
+    sf_session.close()
 
 
 if __name__ == "__main__":

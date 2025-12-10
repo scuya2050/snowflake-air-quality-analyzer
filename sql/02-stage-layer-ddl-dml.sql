@@ -23,24 +23,6 @@ comment = 'all the air quality raw data will store in this internal stage locati
   -- load the data that has been downloaded manually
   -- run the list command to check it
 
-  -- level-1
-select 
-    * 
-from 
-    @dev_db.stage_sch.raw_stg
-    (file_format => JSON_FILE_FORMAT) t;
-
-  -- JSON file analysis using json editor
-  -- level-2
-    select 
-        Try_TO_TIMESTAMP(t.$1:records[0].last_update::text, 'dd-mm-yyyy hh24:mi:ss') as index_record_ts,
-        t.$1,
-        t.$1:total::int as record_count,
-        t.$1:version::text as json_version  
-    from @dev_db.stage_sch.raw_stg
-    (file_format => JSON_FILE_FORMAT) t;
-
--- level3
 select 
     Try_TO_TIMESTAMP(t.$1:records[0].last_update::text, 'dd-mm-yyyy hh24:mi:ss') as index_record_ts,
     t.$1,
@@ -50,31 +32,21 @@ select
     metadata$filename as _stg_file_name,
     metadata$FILE_LAST_MODIFIED as _stg_file_load_ts,
     metadata$FILE_CONTENT_KEY as _stg_file_md5,
-    current_timestamp() as _copy_data_ts
+    SYSDATE() as _copy_data_ts
 
 from @dev_db.stage_sch.raw_stg
 (file_format => JSON_FILE_FORMAT) t;
-
--- @todo interview tag...
--- could you explain the metadata properties
--- why should you use metadata properties
--- how these metadata properties helps you 
--- the table naming convention while building 
--- 16Mb limitations
 
   
 -- creating a raw table to have air quality data
 create or replace transient table raw_aqi (
     id int primary key autoincrement,
-    index_record_ts timestamp not null,
     json_data variant not null,
-    record_count number not null default 0,
-    json_version text not null,
     -- audit columns for debugging
     _stg_file_name text,
     _stg_file_load_ts timestamp,
     _stg_file_md5 text,
-    _copy_data_ts timestamp default current_timestamp()
+    _copy_data_ts timestamp default SYSDATE()
 );
 
 -- should you create transient table or permanent table? if so why?
