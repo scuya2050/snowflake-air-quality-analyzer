@@ -20,60 +20,61 @@ comment = 'all the air quality raw data will store in this internal stage locati
   show stages;
   list @raw_stg;
 
-  -- load the data that has been downloaded manually
-  -- run the list command to check it
-
-select 
-    Try_TO_TIMESTAMP(t.$1:records[0].last_update::text, 'dd-mm-yyyy hh24:mi:ss') as index_record_ts,
-    t.$1,
-    t.$1:total::int as record_count,
-    t.$1:version::text as json_version,
-    -- meta data information
-    metadata$filename as _stg_file_name,
-    metadata$FILE_LAST_MODIFIED as _stg_file_load_ts,
-    metadata$FILE_CONTENT_KEY as _stg_file_md5,
-    SYSDATE() as _copy_data_ts
-
+-- preview the data from stage with metadata columns
+SELECT 
+    t.$1 AS raw_content,
+    REGEXP_SUBSTR(METADATA$FILENAME, 'country=([^/]+)', 1, 1, 'e', 1) AS country,
+    REGEXP_SUBSTR(METADATA$FILENAME, 'city=([^/]+)', 1, 1, 'e', 1) AS city,
+    REGEXP_SUBSTR(METADATA$FILENAME, 'district=([^/]+)', 1, 1, 'e', 1) AS district,
+    CAST(REGEXP_SUBSTR(METADATA$FILENAME, 'year=([0-9]{4})', 1, 1, 'e', 1) AS INT) AS year,
+    CAST(REGEXP_SUBSTR(METADATA$FILENAME, 'month=([0-9]{1,2})', 1, 1, 'e', 1) AS INT) AS month,
+    CAST(REGEXP_SUBSTR(METADATA$FILENAME, 'day=([0-9]{1,2})', 1, 1, 'e', 1) AS INT) AS day,
+    METADATA$FILENAME AS _stg_file_name,
+    METADATA$FILE_LAST_MODIFIED as _stg_file_load_ts,
+    METADATA$FILE_CONTENT_KEY as _stg_file_md5,
+    CURRENT_TIMESTAMP() AS _copy_data_ts,
+    CURRENT_USER() AS _copy_data_user,
+    CURRENT_ROLE() AS _copy_data_role
 from @dev_db.stage_sch.raw_stg
 (file_format => JSON_FILE_FORMAT) t;
 
-  
--- creating a raw table to have air quality data
-create or replace transient table raw_aqi (
-    id int primary key autoincrement,
-    json_data variant not null,
-    -- audit columns for debugging
-    _stg_file_name text,
-    _stg_file_load_ts timestamp,
-    _stg_file_md5 text,
-    _copy_data_ts timestamp default SYSDATE()
+-- create the raw table to land the data
+CREATE OR REPLACE TRANSIENT TABLE raw_aqi (
+    raw                      VARIANT,
+    country                  VARCHAR,
+    city                     VARCHAR,
+    district                 VARCHAR,
+    year                     NUMBER(4,0),
+    month                    NUMBER(2,0),
+    day                      NUMBER(2,0),
+    _stg_file_name           VARCHAR,
+    _stg_file_load_ts        TIMESTAMP_NTZ,
+    _stg_file_md5            VARCHAR,
+    _copy_data_ts            TIMESTAMP_LTZ DEFAULT CURRENT_TIMESTAMP(),
+    _copy_data_user          VARCHAR DEFAULT CURRENT_USER(),
+    _copy_data_role          VARCHAR DEFAULT CURRENT_ROLE()
 );
-
--- should you create transient table or permanent table? if so why?
--- how the standard table cost more with fail safe concept?
-
--- copy command
-
-
 
 -- following copy command
 create or replace task copy_air_quality_data
     warehouse = load_wh
-    schedule = 'USING CRON 0 * * * * Asia/Kolkata'
+    schedule = 'USING CRON 0 * * * * America/Lima'
 as
-copy into raw_aqi (index_record_ts,json_data,record_count,json_version,_stg_file_name,_stg_file_load_ts,_stg_file_md5,_copy_data_ts) from 
+copy into raw_aqi (raw, country, city, district, year, month, day, _stg_file_name, _stg_file_load_ts, _stg_file_md5) from 
 (
-    select 
-        Try_TO_TIMESTAMP(t.$1:records[0].last_update::text, 'dd-mm-yyyy hh24:mi:ss') as index_record_ts,
-        t.$1,
-        t.$1:total::int as record_count,
-        t.$1:version::text as json_version,
-        metadata$filename as _stg_file_name,
-        metadata$FILE_LAST_MODIFIED as _stg_file_load_ts,
-        metadata$FILE_CONTENT_KEY as _stg_file_md5,
-        current_timestamp() as _copy_data_ts
-            
-   from @dev_db.stage_sch.raw_stg as t
+SELECT 
+        t.$1 AS raw,
+        REGEXP_SUBSTR(METADATA$FILENAME, 'country=([^/]+)', 1, 1, 'e', 1) AS country,
+        REGEXP_SUBSTR(METADATA$FILENAME, 'city=([^/]+)', 1, 1, 'e', 1) AS city,
+        REGEXP_SUBSTR(METADATA$FILENAME, 'district=([^/]+)', 1, 1, 'e', 1) AS district,
+        CAST(REGEXP_SUBSTR(METADATA$FILENAME, 'year=([0-9]{4})', 1, 1, 'e', 1) AS INT) AS year,
+        CAST(REGEXP_SUBSTR(METADATA$FILENAME, 'month=([0-9]{1,2})', 1, 1, 'e', 1) AS INT) AS month,
+        CAST(REGEXP_SUBSTR(METADATA$FILENAME, 'day=([0-9]{1,2})', 1, 1, 'e', 1) AS INT) AS day,
+        METADATA$FILENAME AS _stg_file_name,
+        METADATA$FILE_LAST_MODIFIED as _stg_file_load_ts,
+        METADATA$FILE_CONTENT_KEY as _stg_file_md5,
+    from @dev_db.stage_sch.raw_stg
+    (file_format => JSON_FILE_FORMAT) t
 )
 file_format = (format_name = 'dev_db.stage_sch.JSON_FILE_FORMAT') 
 ON_ERROR = ABORT_STATEMENT; 
