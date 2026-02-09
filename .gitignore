@@ -89,10 +89,6 @@ htmlcov/
 **/.terraformrc
 **/terraform.rc
 
-# Terraform variables - block all by default for security
-**/*.tfvars
-!**/*.tfvars.example
-
 # Terraform lock file - commit this for reproducibility
 # Uncomment the line below if you want to ignore it:
 **/.terraform.lock.hcl
