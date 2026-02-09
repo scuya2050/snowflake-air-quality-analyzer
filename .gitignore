@@ -74,6 +74,29 @@ htmlcov/
 # Streamlit
 .streamlit/secrets.toml
 
+# Terraform
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfplan
+**/*.tfplan.*
+**/crash.log
+**/crash.*.log
+**/override.tf
+**/override.tf.json
+**/*_override.tf
+**/*_override.tf.json
+**/.terraformrc
+**/terraform.rc
+
+# Terraform variables - block all by default for security
+**/*.tfvars
+!**/*.tfvars.example
+
+# Terraform lock file - commit this for reproducibility
+# Uncomment the line below if you want to ignore it:
+**/.terraform.lock.hcl
+
 # OS
 Thumbs.db
 .DS_Store
