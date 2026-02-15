@@ -53,7 +53,7 @@ jobs:
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
         run: |
           snow connection add \
-            --connection deploy-conn \
+            --connection-name deploy-conn \
             --account "$SNOWFLAKE_ACCOUNT" \
             --user "$SNOWFLAKE_USER" \
             --password "$SNOWFLAKE_PASSWORD" \
