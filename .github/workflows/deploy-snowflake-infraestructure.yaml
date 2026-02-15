@@ -1,15 +1,29 @@
 name: Deploy Snowflake Infrastructure
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'terraform/**'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'terraform/**'
-  workflow_dispatch:  # Manual trigger
+  # Uncomment to enable automatic deployment on push
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'terraform/*.tf'
+  #     - 'terraform/*.tfvars'
+  #     - 'terraform/environments/*.tfvars'
+  #   paths-ignore:
+  #     - 'terraform/terraform.tfstate*'
+  #     - 'terraform/.terraform/**'
+  
+  # Uncomment to enable plan preview on pull requests
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - 'terraform/*.tf'
+  #     - 'terraform/*.tfvars'
+  #     - 'terraform/environments/*.tfvars'
+  #   paths-ignore:
+  #     - 'terraform/terraform.tfstate*'
+  #     - 'terraform/.terraform/**'
+  
+  workflow_dispatch:  # Manual trigger only
 
 env:
   TF_VERSION: '1.5.0'
@@ -23,6 +37,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
+      - name: Download previous Terraform state
+        uses: dawidd6/action-download-artifact@v2
+        continue-on-error: true  # First run won't have state
+        with:
+          workflow: deploy-snowflake-infraestructure.yaml
+          name: terraform-state
+          path: terraform/
+          if_no_artifact_found: warn
+      
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -30,7 +53,8 @@ jobs:
       
       - name: Configure Snowflake credentials
         env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_ORGANIZATION_NAME: ${{ secrets.SNOWFLAKE_ORGANIZATION_NAME }}
+          SNOWFLAKE_ACCOUNT_NAME: ${{ secrets.SNOWFLAKE_ACCOUNT_NAME }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
         run: |
@@ -39,7 +63,8 @@ jobs:
       - name: Terraform Init
         working-directory: ./terraform
         env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_ORGANIZATION_NAME: ${{ secrets.SNOWFLAKE_ORGANIZATION_NAME }}
+          SNOWFLAKE_ACCOUNT_NAME: ${{ secrets.SNOWFLAKE_ACCOUNT_NAME }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
         run: terraform init
@@ -47,7 +72,8 @@ jobs:
       - name: Terraform Plan
         working-directory: ./terraform
         env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_ORGANIZATION_NAME: ${{ secrets.SNOWFLAKE_ORGANIZATION_NAME }}
+          SNOWFLAKE_ACCOUNT_NAME: ${{ secrets.SNOWFLAKE_ACCOUNT_NAME }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
         run: terraform plan -var-file="environments/dev.tfvars" -out=tfplan
@@ -57,6 +83,16 @@ jobs:
         with:
           name: terraform-plan
           path: terraform/tfplan
+      
+      - name: Upload Terraform state (from plan)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-state-plan
+          path: |
+            terraform/terraform.tfstate
+            terraform/terraform.tfstate.backup
+          retention-days: 90
 
   terraform-apply:
     runs-on: ubuntu-latest
@@ -67,6 +103,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      
+      - name: Download previous Terraform state
+        uses: dawidd6/action-download-artifact@v2
+        continue-on-error: true  # First run won't have state
+        with:
+          workflow: deploy-snowflake-infraestructure.yaml
+          name: terraform-state
+          path: terraform/
+          if_no_artifact_found: warn
       
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -81,7 +126,8 @@ jobs:
       
       - name: Configure Snowflake credentials
         env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_ORGANIZATION_NAME: ${{ secrets.SNOWFLAKE_ORGANIZATION_NAME }}
+          SNOWFLAKE_ACCOUNT_NAME: ${{ secrets.SNOWFLAKE_ACCOUNT_NAME }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
         run: echo "Credentials configured as environment variables"
@@ -89,7 +135,8 @@ jobs:
       - name: Terraform Init
         working-directory: ./terraform
         env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_ORGANIZATION_NAME: ${{ secrets.SNOWFLAKE_ORGANIZATION_NAME }}
+          SNOWFLAKE_ACCOUNT_NAME: ${{ secrets.SNOWFLAKE_ACCOUNT_NAME }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
         run: terraform init
@@ -97,7 +144,18 @@ jobs:
       - name: Terraform Apply
         working-directory: ./terraform
         env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_ORGANIZATION_NAME: ${{ secrets.SNOWFLAKE_ORGANIZATION_NAME }}
+          SNOWFLAKE_ACCOUNT_NAME: ${{ secrets.SNOWFLAKE_ACCOUNT_NAME }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
         run: terraform apply -auto-approve tfplan
+      
+      - name: Upload Terraform state
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-state
+          path: |
+            terraform/terraform.tfstate
+            terraform/terraform.tfstate.backup
+          retention-days: 90

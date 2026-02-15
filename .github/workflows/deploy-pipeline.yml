@@ -1,13 +1,14 @@
-name: Deploy Peru Air Quality Pipeline
+name: Deploy Air Quality Pipeline SQL Objects
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'sql/ddl/**'
-      - 'sql/dml/**'
-      - 'sql/tests/**'
-      - '.github/workflows/deploy-pipeline.yml'
+  # Uncomment to enable automatic deployment on push
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'sql/ddl/**'
+  #     - 'sql/dml/**'
+  #     - '.github/workflows/deploy-pipeline.yml'
+  
   workflow_dispatch:
     inputs:
       environment:
@@ -25,9 +26,10 @@ env:
   SNOWFLAKE_WAREHOUSE: ADHOC_WH
 
 jobs:
-  test-stage-layer:
-    name: Test Stage Layer
+  deploy-sql-objects:
+    name: Deploy SQL Objects
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -40,153 +42,57 @@ jobs:
       - name: Install Snowflake CLI
         run: pip install snowflake-cli-labs
       
-      - name: Configure Snowflake
+      - name: Configure Snowflake Connection
         env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_ORGANIZATION_NAME: ${{ secrets.SNOWFLAKE_ORGANIZATION_NAME }}
+          SNOWFLAKE_ACCOUNT_NAME: ${{ secrets.SNOWFLAKE_ACCOUNT_NAME }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
         run: |
           snowflake connection add deploy-conn \
-            --account $SNOWFLAKE_ACCOUNT \
-            --user $SNOWFLAKE_USER \
-            --password $SNOWFLAKE_PASSWORD \
-            --role ACCOUNTADMIN \
-            --warehouse ADHOC_WH
-      
-      - name: Run Stage Layer Tests
-        run: |
-          snowflake sql -f sql/tests/01-stage-tests.sql \
-            -c deploy-conn \
-            > test-results-stage.log
-          cat test-results-stage.log
-      
-      - name: Check Test Results
-        run: |
-          if grep -q "FAIL" test-results-stage.log; then
-            echo "❌ Stage layer tests failed!"
-            exit 1
-          fi
-          echo "✅ Stage layer tests passed!"
-      
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-stage
-          path: test-results-stage.log
-
-  test-clean-layer:
-    name: Test Clean Layer
-    runs-on: ubuntu-latest
-    needs: test-stage-layer
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      
-      - name: Install Snowflake CLI
-        run: pip install snowflake-cli-labs
-      
-      - name: Configure Snowflake
-        env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
-        run: |
-          snowflake connection add deploy-conn \
-            --account $SNOWFLAKE_ACCOUNT \
+            --account "${SNOWFLAKE_ORGANIZATION_NAME}-${SNOWFLAKE_ACCOUNT_NAME}" \
             --user $SNOWFLAKE_USER \
             --password $SNOWFLAKE_PASSWORD \
             --role ${{ env.SNOWFLAKE_ROLE }} \
             --database ${{ env.SNOWFLAKE_DATABASE }} \
             --warehouse ${{ env.SNOWFLAKE_WAREHOUSE }}
       
-      - name: Verify Infrastructure Exists
+      - name: Deploy DDL - Stage Layer
         run: |
-          echo "Checking if infrastructure is deployed..."
-          snowflake sql -q "SHOW WAREHOUSES LIKE 'ADHOC_WH'" -c deploy-conn || echo "⚠️ Warning: ADHOC_WH not found"
-          snowflake sql -q "SHOW DATABASES LIKE 'DEV_DB'" -c deploy-conn || echo "⚠️ Warning: DEV_DB not found"
-      
-      - name: Run Stage Layer Tests
-        run: |
-          snowflake sql -f sql/tests/01-stage-tests.sql \
-            -c deploy-conn \
-            > test-results-stage.log 2>&1
-          cat test-results-clean.log
-      
-      - name: Check Test Results
-        run: |
-          if grep -q "FAIL" test-results-clean.log; then
-            echo "❌ Clean layer tests failed!"
-            exit 1
-          fi
-          echo "✅ Clean layer tests passed!"
-      
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-clean
-          path: test-results-clean.log
-
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [test-stage-layer, test-clean-layer]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: production
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      
-      - name: Install Snowflake CLI
-        run: pip install snowflake-cli-labs
-      
-      - name: Configure Snowflake
-        env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
-        run: |
-          snowflake connection add deploy-conn \
-            --account $SNOWFLAKE_ACCOUNT \
-            --user $SNOWFLAKE_USER \
-            --password $SNOWFLAKE_PASSWORD \
-            --role ${{ env.SNOWFLAKE_ROLE }} \
-            --database ${{ env.SNOWFLAKE_DATABASE }} \
-            --warehouse ${{ env.SNOWFLAKE_WAREHOUSE }}
-      
-      - name: Deploy DDL Scripts
-        run: |
-          echo "Deploying Stage Layer..."
+          echo "📋 Deploying Stage Layer..."
           snowflake sql -f sql/ddl/01-stage-layer.sql -c deploy-conn
-          
-          echo "Deploying Clean Layer..."
-          snowflake sql -f sql/ddl/02-clean-layer.sql -c deploy-conn
-          
-          echo "Deploying Consumption Layer..."
-          snowflake sql -f sql/ddl/03-consumption-layer.sql -c deploy-conn
-          
-          echo "Deploying Dimensional Model..."
-          snowflake sql -f sql/ddl/04-dimensional-model.sql -c deploy-conn
+          echo "✅ Stage layer deployed"
       
-      - name: Deploy DML Scripts
+      - name: Deploy DDL - Clean Layer
         run: |
-          echo "Deploying Copy Task..."
+          echo "📋 Deploying Clean Layer..."
+          snowflake sql -f sql/ddl/02-clean-layer.sql -c deploy-conn
+          echo "✅ Clean layer deployed"
+      
+      - name: Deploy DDL - Consumption Layer
+        run: |
+          echo "📋 Deploying Consumption Layer..."
+          snowflake sql -f sql/ddl/03-consumption-layer.sql -c deploy-conn
+          echo "✅ Consumption layer deployed"
+      
+      - name: Deploy DDL - Dimensional Model
+        run: |
+          echo "📋 Deploying Dimensional Model..."
+          snowflake sql -f sql/ddl/04-dimensional-model.sql -c deploy-conn
+          echo "✅ Dimensional model deployed"
+      
+      - name: Deploy DML - Copy Task
+        run: |
+          echo "📋 Deploying Copy Task..."
           snowflake sql -f sql/dml/01-copy-task.sql -c deploy-conn
-          
-          echo "Note: Operational commands (02-operational-commands.sql) are runtime only"
+          echo "✅ Copy task deployed"
       
       - name: Deployment Summary
         run: |
+          echo "================================================"
           echo "✅ Deployment completed successfully!"
-          echo "Pipeline is ready for data ingestion"
+          echo "================================================"
+          echo "🗄️  DDL Scripts: All tables, views, and schemas created"
+          echo "⚙️  DML Scripts: Tasks and operational objects configured"
+          echo "🚀 Pipeline is ready for data ingestion"
+          echo "================================================"

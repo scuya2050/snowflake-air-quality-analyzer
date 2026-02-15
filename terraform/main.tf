@@ -8,15 +8,15 @@ terraform {
     }
   }
 
-  # Optional: Uncomment to use remote state
-  # backend "s3" {
-  #   bucket = "your-terraform-state-bucket"
-  #   key    = "snowflake/terraform.tfstate"
-  #   region = "us-east-1"
-  # }
+  # Use LOCAL backend for learning (simplest)
+  backend "local" {
+    path = "terraform.tfstate"
+  }
 }
 
 provider "snowflake" {
+  # Uses environment variables:
+  # SNOWFLAKE_ORGANIZATION_NAME, SNOWFLAKE_ACCOUNT_NAME, SNOWFLAKE_USER, SNOWFLAKE_PASSWORD
 }
 
 # ==============================================================================
