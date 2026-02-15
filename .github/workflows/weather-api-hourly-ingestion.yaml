@@ -1,4 +1,4 @@
-name: weather-hourly-ingestion
+name: Weather API Hourly Ingestion
 
 on:
   schedule:
