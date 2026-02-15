@@ -63,6 +63,7 @@ jobs:
             --role "$SNOWFLAKE_ROLE" \
             --warehouse "$SNOWFLAKE_WAREHOUSE" \
             --default
+            --no-interactive
           
           # Test connection
           snow connection test --connection deploy-conn
