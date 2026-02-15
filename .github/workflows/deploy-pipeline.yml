@@ -39,34 +39,34 @@ jobs:
         with:
           python-version: '3.11'
       
-      - name: Install Snowflake CLI
+      - name: Install Snowflake CLI via pipx
         run: |
+          # Install pipx (Python package installer with isolation)
           python -m pip install --upgrade pip
-          pip install snowflake-cli --user
+          python -m pip install pipx
+          python -m pipx ensurepath
           
-          # Verify installation immediately using full path
-          $HOME/.local/bin/snowflake --version
+          # Install Snowflake CLI
+          pipx install snowflake-cli-labs
           
-          # Add CLI location to PATH for subsequent steps
+          # Add pipx binaries to PATH
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       
-      - name: Verify Snowflake CLI in PATH
+      - name: Verify Snowflake CLI
         run: |
-          which snowflake
           snowflake --version
           echo "✅ Snowflake CLI is ready"
       
       - name: Configure Snowflake Connection
         env:
-          SNOWFLAKE_ORGANIZATION_NAME: ${{ secrets.SNOWFLAKE_ORGANIZATION_NAME }}
-          SNOWFLAKE_ACCOUNT_NAME: ${{ secrets.SNOWFLAKE_ACCOUNT_NAME }}
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ORGANIZATION_NAME }}-${{ secrets.SNOWFLAKE_ACCOUNT_NAME }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
         run: |
           snowflake connection add deploy-conn \
-            --account "${SNOWFLAKE_ORGANIZATION_NAME}-${SNOWFLAKE_ACCOUNT_NAME}" \
-            --user $SNOWFLAKE_USER \
-            --password $SNOWFLAKE_PASSWORD \
+            --account "$SNOWFLAKE_ACCOUNT" \
+            --user "$SNOWFLAKE_USER" \
+            --password "$SNOWFLAKE_PASSWORD" \
             --role ${{ env.SNOWFLAKE_ROLE }} \
             --database ${{ env.SNOWFLAKE_DATABASE }} \
             --warehouse ${{ env.SNOWFLAKE_WAREHOUSE }}
