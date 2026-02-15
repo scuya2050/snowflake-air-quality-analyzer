@@ -62,7 +62,7 @@ jobs:
             --schema "$SNOWFLAKE_SCHEMA" \
             --role "$SNOWFLAKE_ROLE" \
             --warehouse "$SNOWFLAKE_WAREHOUSE" \
-            --default
+            --default \
             --no-interactive
           
           # Test connection
