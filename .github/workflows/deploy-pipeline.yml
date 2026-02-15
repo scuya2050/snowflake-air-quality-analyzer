@@ -52,11 +52,14 @@ jobs:
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
         run: |
-          snowflake connection add 
+          snow connection add 
             --connection deploy-conn \
             --account "$SNOWFLAKE_ACCOUNT" \
             --user "$SNOWFLAKE_USER" \
             --password "$SNOWFLAKE_PASSWORD" \
+            --database "$SNOWFLAKE_DATABASE" \
+            --role "$SNOWFLAKE_ROLE" \
+            --warehouse "$SNOWFLAKE_WAREHOUSE" \
             --default
           
           # Test connection
@@ -66,31 +69,31 @@ jobs:
       - name: Deploy DDL - Stage Layer
         run: |
           echo "📋 Deploying Stage Layer..."
-          snowflake sql -f sql/ddl/01-stage-layer.sql -c deploy-conn
+          snow sql -f sql/ddl/01-stage-layer.sql -c deploy-conn
           echo "✅ Stage layer deployed"
       
       - name: Deploy DDL - Clean Layer
         run: |
           echo "📋 Deploying Clean Layer..."
-          snowflake sql -f sql/ddl/02-clean-layer.sql -c deploy-conn
+          snow sql -f sql/ddl/02-clean-layer.sql -c deploy-conn
           echo "✅ Clean layer deployed"
       
       - name: Deploy DDL - Consumption Layer
         run: |
           echo "📋 Deploying Consumption Layer..."
-          snowflake sql -f sql/ddl/03-consumption-layer.sql -c deploy-conn
+          snow sql -f sql/ddl/03-consumption-layer.sql -c deploy-conn
           echo "✅ Consumption layer deployed"
       
       - name: Deploy DDL - Dimensional Model
         run: |
           echo "📋 Deploying Dimensional Model..."
-          snowflake sql -f sql/ddl/04-dimensional-model.sql -c deploy-conn
+          snow sql -f sql/ddl/04-dimensional-model.sql -c deploy-conn
           echo "✅ Dimensional model deployed"
       
       - name: Deploy DML - Copy Task
         run: |
           echo "📋 Deploying Copy Task..."
-          snowflake sql -f sql/dml/01-copy-task.sql -c deploy-conn
+          snow sql -f sql/dml/01-copy-task.sql -c deploy-conn
           echo "✅ Copy task deployed"
       
       - name: Deployment Summary
