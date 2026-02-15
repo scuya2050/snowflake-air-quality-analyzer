@@ -1,5 +1,5 @@
 -- =====================================================
--- Stage Layer DDL - Peru Air Quality
+-- Stage Layer DDL - Air Quality (Multi-Country)
 -- Purpose: Create stage layer objects for raw data landing
 -- Dependencies: 
 --   - dev_db.stage_sch schema (created via Terraform)
@@ -38,7 +38,7 @@ CREATE OR REPLACE TRANSIENT TABLE dev_db.stage_sch.raw_aqi (
     _copy_data_user          VARCHAR DEFAULT CURRENT_USER(),
     _copy_data_role          VARCHAR DEFAULT CURRENT_ROLE()
 )
-COMMENT = 'Raw landing table for Peru air quality data - stores JSON payload with partition metadata';
+COMMENT = 'Raw landing table for multi-country air quality data - stores JSON payload with partition metadata';
 
 -- Script execution completed
 SELECT 'Stage layer objects created successfully' AS status;

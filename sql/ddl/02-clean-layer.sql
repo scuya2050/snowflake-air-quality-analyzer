@@ -1,5 +1,5 @@
 -- =====================================================
--- Clean Layer DDL - Peru Air Quality
+-- Clean Layer DDL - Air Quality (Multi-Country)
 -- Purpose: Create clean layer dynamic table with deduplication
 -- Dependencies: 
 --   - dev_db.stage_sch.raw_aqi (from 01-stage-layer.sql)
@@ -7,9 +7,10 @@
 --   - transform_wh warehouse (created via Terraform)
 --
 -- Object Creation Order:
---   1. Dynamic Table: clean_peru_aqi_dt
+--   1. Dynamic Table: clean_aqi_dt
 --
--- Version: 1.0.0
+-- Multi-Country Support: Processes all countries in raw_aqi table
+-- Version: 2.0.0
 -- =====================================================
 
 USE ROLE accountadmin;
@@ -17,22 +18,27 @@ USE SCHEMA dev_db.clean_sch;
 USE WAREHOUSE adhoc_wh;
 
 -- =====================================================
--- 1. DYNAMIC TABLE: CLEAN PERU AQI
+-- 1. DYNAMIC TABLE: CLEAN AQI (ALL COUNTRIES)
 -- Purpose: Deduplicated air quality + weather data
 -- Grain: One row per unique (timestamp, location) combination
 -- Deduplication: Latest file wins when duplicates exist
+-- Multi-Country: Processes all countries (Peru, Singapore, India, etc.)
 -- =====================================================
 
-CREATE OR REPLACE DYNAMIC TABLE dev_db.clean_sch.clean_peru_aqi_dt
+CREATE OR REPLACE DYNAMIC TABLE dev_db.clean_sch.clean_aqi_dt
     TARGET_LAG = 'downstream'
     WAREHOUSE = transform_wh
-    COMMENT = 'v1.0.0 - Deduplicated and transformed Peru air quality data from Weather API'
+    COMMENT = 'v2.0.0 - Deduplicated and transformed multi-country air quality data from Weather API'
 AS
-WITH peru_aqi_with_rank AS (
+WITH aqi_with_rank AS (
     SELECT 
-        -- Measurement identifier
-        raw:current:last_updated::VARCHAR AS measurement_ts,
+        -- Measurement identifier (UTC timestamps)
+        TO_TIMESTAMP(raw:current:last_updated_epoch::NUMBER) AS measurement_ts,
         raw:current:last_updated_epoch::NUMBER AS measurement_epoch,
+        
+        -- Request metadata (UTC timestamp)
+        TO_TIMESTAMP(raw:location:localtime_epoch::NUMBER) AS request_ts,
+        raw:location:localtime_epoch::NUMBER AS request_epoch,
         
         -- Location information
         raw:location:name::VARCHAR AS location_name,
@@ -41,8 +47,6 @@ WITH peru_aqi_with_rank AS (
         raw:location:lat::NUMBER(10,7) AS latitude,
         raw:location:lon::NUMBER(10,7) AS longitude,
         raw:location:tz_id::VARCHAR AS timezone_id,
-        raw:location:localtime::VARCHAR AS local_time,
-        raw:location:localtime_epoch::NUMBER AS local_time_epoch,
         
         -- Air Quality Metrics
         raw:current:air_quality:co::NUMBER(10,2) AS co,
@@ -91,7 +95,7 @@ WITH peru_aqi_with_rank AS (
         -- Order by file load time (latest file wins)
         ROW_NUMBER() OVER (
             PARTITION BY 
-                raw:current:last_updated::VARCHAR,
+                raw:current:last_updated_epoch::NUMBER,
                 raw:location:name::VARCHAR,
                 raw:location:lat::NUMBER(10,7),
                 raw:location:lon::NUMBER(10,7)
@@ -99,20 +103,20 @@ WITH peru_aqi_with_rank AS (
         ) AS latest_file_rank
         
     FROM dev_db.stage_sch.raw_aqi
-    WHERE country = 'peru'
-        AND raw:current:last_updated IS NOT NULL
+    WHERE raw:current:last_updated IS NOT NULL
+        -- Multi-country: No country filter, process all countries
 )
 SELECT 
     measurement_ts,
     measurement_epoch,
+    request_ts,
+    request_epoch,
     location_name,
     region,
     location_country,
     latitude,
     longitude,
     timezone_id,
-    local_time,
-    local_time_epoch,
     co,
     no2,
     o3,
@@ -147,7 +151,7 @@ SELECT
     _copy_data_ts,
     _copy_data_user,
     _copy_data_role
-FROM peru_aqi_with_rank
+FROM aqi_with_rank
 WHERE latest_file_rank = 1;
 
 -- Script execution completed
