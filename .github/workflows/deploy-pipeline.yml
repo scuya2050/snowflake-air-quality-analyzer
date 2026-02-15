@@ -52,8 +52,7 @@ jobs:
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
         run: |
-          snow connection add \
-            --connection-name deploy-conn \
+          snowflake connection add deploy-conn \
             --account "$SNOWFLAKE_ACCOUNT" \
             --user "$SNOWFLAKE_USER" \
             --password "$SNOWFLAKE_PASSWORD" \
@@ -66,31 +65,31 @@ jobs:
       - name: Deploy DDL - Stage Layer
         run: |
           echo "📋 Deploying Stage Layer..."
-          snow sql -f sql/ddl/01-stage-layer.sql --connection deploy-conn
+          snowflake sql -f sql/ddl/01-stage-layer.sql -c deploy-conn
           echo "✅ Stage layer deployed"
       
       - name: Deploy DDL - Clean Layer
         run: |
           echo "📋 Deploying Clean Layer..."
-          snow sql -f sql/ddl/02-clean-layer.sql --connection deploy-conn
+          snowflake sql -f sql/ddl/02-clean-layer.sql -c deploy-conn
           echo "✅ Clean layer deployed"
       
       - name: Deploy DDL - Consumption Layer
         run: |
           echo "📋 Deploying Consumption Layer..."
-          snow sql -f sql/ddl/03-consumption-layer.sql --connection deploy-conn
+          snowflake sql -f sql/ddl/03-consumption-layer.sql -c deploy-conn
           echo "✅ Consumption layer deployed"
       
       - name: Deploy DDL - Dimensional Model
         run: |
           echo "📋 Deploying Dimensional Model..."
-          snow sql -f sql/ddl/04-dimensional-model.sql --connection deploy-conn
+          snowflake sql -f sql/ddl/04-dimensional-model.sql -c deploy-conn
           echo "✅ Dimensional model deployed"
       
       - name: Deploy DML - Copy Task
         run: |
           echo "📋 Deploying Copy Task..."
-          snow sql -f sql/dml/01-copy-task.sql --connection deploy-conn
+          snowflake sql -f sql/dml/01-copy-task.sql -c deploy-conn
           echo "✅ Copy task deployed"
       
       - name: Deployment Summary
