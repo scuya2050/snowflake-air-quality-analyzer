@@ -17,7 +17,7 @@
 -- =====================================================
 
 USE ROLE accountadmin;
-USE SCHEMA dev_db.consumption_sch;
+USE SCHEMA dev_db.publish_sch;
 USE WAREHOUSE adhoc_wh;
 
 -- =====================================================
@@ -28,7 +28,7 @@ USE WAREHOUSE adhoc_wh;
 -- Use Case: Compare all countries at same local hour (e.g., 3 PM everywhere)
 -- =====================================================
 
-CREATE OR REPLACE DYNAMIC TABLE date_dim
+CREATE OR REPLACE DYNAMIC TABLE dev_db.publish_sch.date_dim
     TARGET_LAG = 'DOWNSTREAM'
     WAREHOUSE = transform_wh
     COMMENT = 'Local time dimension for cross-country time-of-day analysis'
@@ -55,7 +55,7 @@ FROM time_data;
 -- Multi-Country: Contains timezone_id for local time conversion
 -- =====================================================
 
-CREATE OR REPLACE DYNAMIC TABLE location_dim
+CREATE OR REPLACE DYNAMIC TABLE dev_db.publish_sch.location_dim
     TARGET_LAG = 'DOWNSTREAM'
     WAREHOUSE = transform_wh
     COMMENT = 'Location dimension for multi-country air quality - supports geographic and timezone analysis'
@@ -84,7 +84,7 @@ FROM location_data;
 -- Data Quality: Includes readings_in_hour to track aggregation quality
 -- =====================================================
 
-CREATE OR REPLACE DYNAMIC TABLE air_quality_fact
+CREATE OR REPLACE DYNAMIC TABLE dev_db.publish_sch.air_quality_fact
     TARGET_LAG = 'DOWNSTREAM'
     WAREHOUSE = transform_wh
     COMMENT = 'Fact table for multi-country air quality - hourly grain with local time for time-of-day analysis'
