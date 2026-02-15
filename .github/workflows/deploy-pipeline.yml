@@ -37,7 +37,7 @@ jobs:
       - name: Install Snowflake CLI via dpkg
         run: |
           # Download the .deb package
-          curl -L -O https://sfc-repo.snowflakecomputing.com/snowflake-cli/latest/snowflake-cli-linux_x86_64.deb
+          curl -L -O https://sfc-repo.snowflakecomputing.com/snowflake-cli/linux_x86_64/3.15.0/snowflake-cli-3.15.0.x86_64.deb
           
           # Install the package
           sudo dpkg -i snowflake-cli-linux_x86_64.deb
