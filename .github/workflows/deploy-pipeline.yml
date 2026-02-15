@@ -22,6 +22,7 @@ on:
 
 env:
   SNOWFLAKE_DATABASE: DEV_DB
+  SNOWFLAKE_SCHEMA: PUBLIC
   SNOWFLAKE_ROLE: ACCOUNTADMIN
   SNOWFLAKE_WAREHOUSE: ADHOC_WH
 
@@ -51,13 +52,14 @@ jobs:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ORGANIZATION_NAME }}-${{ secrets.SNOWFLAKE_ACCOUNT_NAME }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
-        run: |
+        run: |  
           snow connection add \
             --connection-name deploy-conn \
             --account "$SNOWFLAKE_ACCOUNT" \
             --user "$SNOWFLAKE_USER" \
             --password "$SNOWFLAKE_PASSWORD" \
             --database "$SNOWFLAKE_DATABASE" \
+            --schema "$SNOWFLAKE_SCHEMA" \
             --role "$SNOWFLAKE_ROLE" \
             --warehouse "$SNOWFLAKE_WAREHOUSE" \
             --default
