@@ -34,28 +34,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      
-      - name: Install Snowflake CLI via pipx
+      - name: Install Snowflake CLI via dpkg
         run: |
-          # Install pipx (Python package installer with isolation)
-          python -m pip install --upgrade pip
-          python -m pip install pipx
-          python -m pipx ensurepath
+          # Download the .deb package
+          curl -L -O https://sfc-repo.snowflakecomputing.com/snowflake-cli/latest/snowflake-cli-linux_x86_64.deb
           
-          # Install Snowflake CLI
-          pipx install snowflake-cli-labs
+          # Install the package
+          sudo dpkg -i snowflake-cli-linux_x86_64.deb
           
-          # Add pipx binaries to PATH
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-      
-      - name: Verify Snowflake CLI
-        run: |
+          # Verify installation
           snowflake --version
-          echo "✅ Snowflake CLI is ready"
+          echo "✅ Snowflake CLI installed"
       
       - name: Configure Snowflake Connection
         env:
