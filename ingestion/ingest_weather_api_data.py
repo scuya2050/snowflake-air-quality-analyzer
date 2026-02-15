@@ -22,7 +22,7 @@ def load_config():
     # Load environment variables first
     api_token = os.getenv("API_TOKEN")
     api_url = os.getenv("API_URL")
-    snowflake_account = os.getenv("SNOWFLAKE_ACCOUNT")
+    snowflake_account = f'{os.getenv("SNOWFLAKE_ORGANIZATION_NAME")}-{os.getenv("SNOWFLAKE_ACCOUNT_NAME")}'
     snowflake_user = os.getenv("SNOWFLAKE_USER")
     snowflake_password = os.getenv("SNOWFLAKE_PASSWORD")
 
@@ -31,7 +31,7 @@ def load_config():
         load_dotenv()  # loads variables from .env if it exists
         api_token = api_token or os.getenv("API_TOKEN")
         api_url = api_url or os.getenv("API_URL")
-        snowflake_account = os.getenv("SNOWFLAKE_ACCOUNT")
+        snowflake_account = f'{os.getenv("SNOWFLAKE_ORGANIZATION_NAME")}-{os.getenv("SNOWFLAKE_ACCOUNT_NAME")}'
         snowflake_user = os.getenv("SNOWFLAKE_USER")
         snowflake_password = os.getenv("SNOWFLAKE_PASSWORD")
 
