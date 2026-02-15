@@ -36,7 +36,7 @@ CREATE OR REPLACE FUNCTION peru_prominent_pollutant(
 )
 RETURNS VARCHAR
 LANGUAGE PYTHON
-RUNTIME_VERSION = '3.8'
+RUNTIME_VERSION = '3.12'
 HANDLER = 'peru_prominent_pollutant'
 COMMENT = 'Returns the pollutant with the highest concentration value'
 AS $$
@@ -64,7 +64,7 @@ CREATE OR REPLACE FUNCTION peru_aqi_criteria_met(
 )
 RETURNS NUMBER(38,0)
 LANGUAGE PYTHON
-RUNTIME_VERSION = '3.8'
+RUNTIME_VERSION = '3.12'
 HANDLER = 'peru_aqi_criteria_met'
 COMMENT = 'Validates minimum pollutant measurements (1 PM + 2 others)'
 AS $$
