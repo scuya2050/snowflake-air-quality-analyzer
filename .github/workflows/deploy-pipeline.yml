@@ -93,11 +93,11 @@ jobs:
           snow sql -f sql/ddl/04-dimensional-model.sql -c deploy-conn
           echo "✅ Dimensional model deployed"
 
-      - name: Deploy DDL - Streamlit Views and Application Layer
+      - name: Deploy DDL - Streamlit Views
         run: |
-          echo "📋 Deploying Streamlit Views and Application Layer..."
-          snow sql -f sql/ddl/05-streamlit.sql -c deploy-conn
-          echo "✅ Streamlit Views and Application Layer deployed"
+          echo "📋 Deploying Streamlit Views..."
+          snow sql -f sql/ddl/05-streamlit-views.sql -c deploy-conn
+          echo "✅ Streamlit Views deployed"
       
       - name: Deploy DML - Copy Task
         run: |
@@ -110,7 +110,7 @@ jobs:
           echo "================================================"
           echo "✅ Data Pipeline Deployment Complete!"
           echo "================================================"
-          echo "🗄️  DDL Scripts: 01 → 02 → 03 → 04 → 05 (views)"
+          echo "🗄️  DDL Scripts: 01 → 02 → 03 → 04 → 05"
           echo "⚙️  DML Scripts: Copy task configured"
           echo "🚀 Pipeline ready for data ingestion"
           echo ""
