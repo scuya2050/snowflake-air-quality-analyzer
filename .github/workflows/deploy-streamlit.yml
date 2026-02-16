@@ -7,12 +7,12 @@ name: Deploy Streamlit App
 # Architecture: Everything in publish_sch (views + app in same schema)
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'streamlit/**'
-      - 'sql/app/**'
-      - '.github/workflows/deploy-streamlit.yml'
+#   push:
+#     branches: [main]
+#     paths:
+#       - 'streamlit/**'
+#       - 'sql/app/**'
+#       - '.github/workflows/deploy-streamlit.yml'
   workflow_dispatch:
 
 env:
@@ -110,7 +110,7 @@ jobs:
       - name: Verify Uploaded Files
         run: |
           echo "🔍 Verifying uploaded files..."
-          snow stage list \
+          snow stage list files \
             @dev_db.publish_sch.streamlit_stage \
             --connection streamlit-deploy
           echo "✅ Files verified in stage"
