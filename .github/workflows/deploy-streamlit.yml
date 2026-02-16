@@ -66,15 +66,13 @@ jobs:
       - name: Verify Infrastructure Exists
         run: |
           echo "🔍 Verifying Terraform-managed infrastructure..."
-          snow sql --connection streamlit-deploy <<'EOF'
-          SHOW SCHEMAS LIKE 'PUBLISH_SCH' IN DATABASE dev_db;
-          EOF
+          snow sql --connection streamlit-deploy -q "SHOW SCHEMAS LIKE 'PUBLISH_SCH' IN DATABASE dev_db;"
           echo "✅ Infrastructure verified (publish_sch exists)"
 
       - name: Upload Main App File
         run: |
           echo "📤 Uploading streamlit_app.py..."
-          snow stage put \
+          snow stage copy \
             streamlit/streamlit_app.py \
             @dev_db.publish_sch.streamlit_stage/ \
             --overwrite \
@@ -84,25 +82,25 @@ jobs:
       - name: Upload Page Files
         run: |
           echo "📤 Uploading page files..."
-          snow stage put \
+          snow stage copy \
             streamlit/pages/01-air-quality-trend-city-day-level.py \
             @dev_db.publish_sch.streamlit_stage/pages/ \
             --overwrite \
             --connection streamlit-deploy
           
-          snow stage put \
+          snow stage copy \
             streamlit/pages/02-air-quality-trend-city-hour-level.py \
             @dev_db.publish_sch.streamlit_stage/pages/ \
             --overwrite \
             --connection streamlit-deploy
           
-          snow stage put \
+          snow stage copy \
             streamlit/pages/03-air-quality-map.py \
             @dev_db.publish_sch.streamlit_stage/pages/ \
             --overwrite \
             --connection streamlit-deploy
           
-          snow stage put \
+          snow stage copy \
             streamlit/pages/04-air-quality-map-bubble.py \
             @dev_db.publish_sch.streamlit_stage/pages/ \
             --overwrite \
