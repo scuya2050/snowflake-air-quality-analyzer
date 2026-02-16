@@ -110,7 +110,7 @@ jobs:
       - name: Verify Uploaded Files
         run: |
           echo "🔍 Verifying uploaded files..."
-          snow stage list files \
+          snow stage list-files \
             @dev_db.publish_sch.streamlit_stage \
             --connection streamlit-deploy
           echo "✅ Files verified in stage"
