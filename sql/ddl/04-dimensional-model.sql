@@ -29,7 +29,7 @@ USE WAREHOUSE adhoc_wh;
 -- =====================================================
 
 CREATE OR REPLACE DYNAMIC TABLE dev_db.publish_sch.date_dim
-    TARGET_LAG = 'DOWNSTREAM'
+    TARGET_LAG = '30 minutes'
     WAREHOUSE = transform_wh
     COMMENT = 'Local time dimension for cross-country time-of-day analysis'
 AS
@@ -56,7 +56,7 @@ FROM time_data;
 -- =====================================================
 
 CREATE OR REPLACE DYNAMIC TABLE dev_db.publish_sch.location_dim
-    TARGET_LAG = 'DOWNSTREAM'
+    TARGET_LAG = '30 minutes'
     WAREHOUSE = transform_wh
     COMMENT = 'Location dimension for multi-country air quality - supports geographic and timezone analysis'
 AS
@@ -85,7 +85,7 @@ FROM location_data;
 -- =====================================================
 
 CREATE OR REPLACE DYNAMIC TABLE dev_db.publish_sch.air_quality_fact
-    TARGET_LAG = 'DOWNSTREAM'
+    TARGET_LAG = '30 minutes'
     WAREHOUSE = transform_wh
     COMMENT = 'Fact table for multi-country air quality - hourly grain with local time for time-of-day analysis'
 AS

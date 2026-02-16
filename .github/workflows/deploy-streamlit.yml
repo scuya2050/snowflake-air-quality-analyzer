@@ -1,0 +1,160 @@
+name: Deploy Streamlit App
+
+# Workflow: Upload files to stage, then execute app deployment script
+# Infrastructure (database, schemas, warehouses) managed by Terraform
+# Data views deployed by deploy-pipeline.yml (sql/ddl/05-streamlit-views.sql)
+# App definition in sql/app/deploy-streamlit-app.sql
+# Architecture: Everything in publish_sch (views + app in same schema)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'streamlit/**'
+      - 'sql/app/**'
+      - '.github/workflows/deploy-streamlit.yml'
+  workflow_dispatch:
+
+env:
+  SNOWFLAKE_DATABASE: DEV_DB
+  SNOWFLAKE_SCHEMA: PUBLISH_SCH
+  SNOWFLAKE_ROLE: ACCOUNTADMIN
+  SNOWFLAKE_WAREHOUSE: ADHOC_WH
+
+jobs:
+  deploy-streamlit:
+    name: Deploy Streamlit Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Snowflake CLI
+        run: |
+          curl -L -O https://sfc-repo.snowflakecomputing.com/snowflake-cli/linux_x86_64/3.15.0/snowflake-cli-3.15.0.x86_64.deb
+          sudo dpkg -i snowflake-cli-3.15.0.x86_64.deb
+          snow --version
+          echo "✅ Snowflake CLI installed"
+
+      - name: Configure Snowflake Connection
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ORGANIZATION_NAME }}-${{ secrets.SNOWFLAKE_ACCOUNT_NAME }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+        run: |
+          snow connection add \
+            --connection-name streamlit-deploy \
+            --account "$SNOWFLAKE_ACCOUNT" \
+            --user "$SNOWFLAKE_USER" \
+            --password "$SNOWFLAKE_PASSWORD" \
+            --database "$SNOWFLAKE_DATABASE" \
+            --schema "$SNOWFLAKE_SCHEMA" \
+            --role "$SNOWFLAKE_ROLE" \
+            --warehouse "$SNOWFLAKE_WAREHOUSE" \
+            --default \
+            --no-interactive
+          
+          snow connection test --connection streamlit-deploy
+          echo "✅ Connection configured and tested"
+
+      - name: Verify Infrastructure Exists
+        run: |
+          echo "🔍 Verifying Terraform-managed infrastructure..."
+          snow sql --connection streamlit-deploy <<'EOF'
+          SHOW SCHEMAS LIKE 'PUBLISH_SCH' IN DATABASE dev_db;
+          EOF
+          echo "✅ Infrastructure verified (publish_sch exists)"
+
+      - name: Upload Main App File
+        run: |
+          echo "📤 Uploading streamlit_app.py..."
+          snow stage put \
+            streamlit/streamlit_app.py \
+            @dev_db.publish_sch.streamlit_stage/ \
+            --overwrite \
+            --connection streamlit-deploy
+          echo "✅ Main app uploaded"
+
+      - name: Upload Page Files
+        run: |
+          echo "📤 Uploading page files..."
+          snow stage put \
+            streamlit/pages/01-air-quality-trend-city-day-level.py \
+            @dev_db.publish_sch.streamlit_stage/pages/ \
+            --overwrite \
+            --connection streamlit-deploy
+          
+          snow stage put \
+            streamlit/pages/02-air-quality-trend-city-hour-level.py \
+            @dev_db.publish_sch.streamlit_stage/pages/ \
+            --overwrite \
+            --connection streamlit-deploy
+          
+          snow stage put \
+            streamlit/pages/03-air-quality-map.py \
+            @dev_db.publish_sch.streamlit_stage/pages/ \
+            --overwrite \
+            --connection streamlit-deploy
+          
+          snow stage put \
+            streamlit/pages/04-air-quality-map-bubble.py \
+            @dev_db.publish_sch.streamlit_stage/pages/ \
+            --overwrite \
+            --connection streamlit-deploy
+          echo "✅ All page files uploaded"
+
+      - name: Verify Uploaded Files
+        run: |
+          echo "🔍 Verifying uploaded files..."
+          snow stage list \
+            @dev_db.publish_sch.streamlit_stage \
+            --connection streamlit-deploy
+          echo "✅ Files verified in stage"
+
+      - name: Deploy Streamlit App
+        run: |
+          echo "🎨 Creating/updating Streamlit app..."
+          snow sql \
+            --connection streamlit-deploy \
+            --filename sql/app/deploy-streamlit-app.sql
+          echo "✅ Streamlit app deployed"
+
+      - name: Deployment Summary
+        run: |
+          echo ""
+          echo "🎉 =================================="
+          echo "🎉 Streamlit Deployment Complete!"
+          echo "🎉 =================================="
+          echo ""
+          echo "📱 Application: air_quality_analytics"
+          echo "📂 Location: dev_db.publish_sch (single front-facing schema)"
+          echo "⚡ Warehouse: adhoc_wh"
+          echo "👤 Role: ACCOUNTADMIN"
+          echo ""
+          echo "📄 Deployed Files:"
+          echo "  • streamlit_app.py (homepage)"
+          echo "  • pages/01-air-quality-trend-city-day-level.py"
+          echo "  • pages/02-air-quality-trend-city-hour-level.py"
+          echo "  • pages/03-air-quality-map.py"
+          echo "  • pages/04-air-quality-map-bubble.py"
+          echo ""
+          echo "📋 What Was Deployed:"
+          echo "  1. Uploaded files to @dev_db.publish_sch.streamlit_stage"
+          echo "  2. Executed sql/app/deploy-streamlit-app.sql"
+          echo "     - Created/updated app (air_quality_analytics)"
+          echo ""
+          echo "💡 Architecture:"
+          echo "  • Views: Deployed via deploy-pipeline.yml (data layer)"
+          echo "  • App: Deployed via this workflow (presentation layer)"
+          echo "  • Schema: publish_sch (single front-facing schema)"
+          echo ""
+          echo "🌐 Access URL:"
+          echo "https://${{ secrets.SNOWFLAKE_ORGANIZATION_NAME }}-${{ secrets.SNOWFLAKE_ACCOUNT_NAME }}.snowflakecomputing.com/streamlit/dev_db/publish_sch/air_quality_analytics"
+          echo ""
+          echo "✅ Ready to use as ACCOUNTADMIN!"

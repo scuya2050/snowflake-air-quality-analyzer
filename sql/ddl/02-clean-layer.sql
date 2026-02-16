@@ -26,7 +26,7 @@ USE WAREHOUSE adhoc_wh;
 -- =====================================================
 
 CREATE OR REPLACE DYNAMIC TABLE dev_db.clean_sch.clean_aqi_dt
-    TARGET_LAG = 'downstream'
+    TARGET_LAG = 'DOWNSTREAM'
     WAREHOUSE = transform_wh
     COMMENT = 'v2.0.0 - Deduplicated and transformed multi-country air quality data from Weather API'
 AS

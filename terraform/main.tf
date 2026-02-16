@@ -53,7 +53,7 @@ resource "snowflake_schema" "consumption_sch" {
 resource "snowflake_schema" "publish_sch" {
   database = snowflake_database.main.name
   name     = "PUBLISH_SCH"
-  comment  = "Publish layer for data sharing"
+  comment  = "Publish layer for data sharing and Streamlit apps (front-facing schema)"
 }
 
 # ==============================================================================

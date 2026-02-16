@@ -1,11 +1,11 @@
-name: Deploy Air Quality Pipeline SQL Objects
+name: Deploy AQI SQL Objects
 
 on:
   # Uncomment to enable automatic deployment on push
   # push:
   #   branches: [main]
   #   paths:
-  #     - 'sql/ddl/**'
+  #     - 'sql/ddl/0[1-5]-*.sql'
   #     - 'sql/dml/**'
   #     - '.github/workflows/deploy-pipeline.yml'
   
@@ -92,6 +92,12 @@ jobs:
           echo "📋 Deploying Dimensional Model..."
           snow sql -f sql/ddl/04-dimensional-model.sql -c deploy-conn
           echo "✅ Dimensional model deployed"
+
+      - name: Deploy DDL - Streamlit Views and Application Layer
+        run: |
+          echo "📋 Deploying Streamlit Views and Application Layer..."
+          snow sql -f sql/ddl/05-streamlit.sql -c deploy-conn
+          echo "✅ Streamlit Views and Application Layer deployed"
       
       - name: Deploy DML - Copy Task
         run: |
@@ -102,9 +108,13 @@ jobs:
       - name: Deployment Summary
         run: |
           echo "================================================"
-          echo "✅ Deployment completed successfully!"
+          echo "✅ Data Pipeline Deployment Complete!"
           echo "================================================"
-          echo "🗄️  DDL Scripts: All tables, views, and schemas created"
-          echo "⚙️  DML Scripts: Tasks and operational objects configured"
-          echo "🚀 Pipeline is ready for data ingestion"
+          echo "🗄️  DDL Scripts: 01 → 02 → 03 → 04 → 05 (views)"
+          echo "⚙️  DML Scripts: Copy task configured"
+          echo "🚀 Pipeline ready for data ingestion"
+          echo ""
+          echo "📝 Next Steps:"
+          echo "  1. Run deploy-streamlit.yml to deploy dashboard"
+          echo "  2. Resume COPY task: ALTER TASK...RESUME"
           echo "================================================"

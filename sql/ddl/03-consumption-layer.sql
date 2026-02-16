@@ -104,7 +104,7 @@ $$;
 -- =====================================================
 
 CREATE OR REPLACE DYNAMIC TABLE dev_db.consumption_sch.aqi_consumption_dt
-    TARGET_LAG = '30 min'
+    TARGET_LAG = 'DOWNSTREAM'
     WAREHOUSE = transform_wh
     COMMENT = 'Multi-country air quality consumption layer with hourly aggregation, local time hierarchy, and calculated metrics'
 AS
