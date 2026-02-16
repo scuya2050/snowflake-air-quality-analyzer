@@ -2,6 +2,7 @@
 -- Streamlit Application Deployment
 -- Purpose: Create/update Streamlit app object
 -- Prerequisites:
+--   - streamlit_stage managed by Terraform
 --   - Views deployed: vw_daily_city_agg, vw_hourly_city_agg, vw_hourly_district_detail, vw_latest_district_aqi, vw_location_hierarchy
 --   - Files uploaded to @dev_db.publish_sch.streamlit_stage (streamlit_app.py + pages/)
 --   - Warehouse: adhoc_wh exists

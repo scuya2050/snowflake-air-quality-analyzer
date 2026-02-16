@@ -28,6 +28,11 @@ output "stage_name" {
   value       = snowflake_stage.raw_stg.name
 }
 
+output "streamlit_stage_name" {
+  description = "Name of the Streamlit stage"
+  value       = snowflake_stage.streamlit_stage.name
+}
+
 output "file_format_name" {
   description = "Name of the JSON file format"
   value       = snowflake_file_format.json_file_format.name

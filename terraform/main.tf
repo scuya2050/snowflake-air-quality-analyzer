@@ -140,3 +140,10 @@ resource "snowflake_stage" "raw_stg" {
   comment   = "All air quality raw data will be stored in this internal stage"
   directory = "ENABLE = true"
 }
+
+resource "snowflake_stage" "streamlit_stage" {
+  name     = "STREAMLIT_STAGE"
+  database = snowflake_database.main.name
+  schema   = snowflake_schema.publish_sch.name
+  comment  = "Stage for Streamlit application files"
+}
