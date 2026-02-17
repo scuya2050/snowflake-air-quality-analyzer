@@ -15,8 +15,8 @@ dependencies:
   # Core Python
   - python=3.11
   
-  # Streamlit framework (pinned version)
-  - streamlit=1.50
+  # Streamlit framework (use Snowflake's default version)
+  - streamlit=1.35.0
   
   # Snowflake packages (REQUIRED - used in all pages)
   - snowflake-snowpark-python
