@@ -22,22 +22,22 @@ dependencies:
   - snowflake-snowpark-python
   
   # Data manipulation (REQUIRED - used in all pages)
-  - pandas>=2.0.0
+  - pandas
   
   # Numeric operations (recommended with pandas)
-  - numpy>=1.24.0
+  - numpy
   
   # Optional enhancements (uncomment if needed):
   # 
   # Interactive visualizations (better than st.bar_chart/st.line_chart):
-  # - plotly>=5.14.0
+  # - plotly
   # 
   # Advanced mapping (better than st.map):
-  # - pydeck>=0.8.0
+  # - pydeck
   # 
   # Declarative visualizations:
-  # - altair>=5.0.0
+  # - altair
   # 
   # Statistical analysis:
-  # - scipy>=1.11.0
-  # - scikit-learn>=1.3.0
+  # - scipy
+  # - scikit-learn
