@@ -69,6 +69,16 @@ jobs:
           snow sql --connection streamlit-deploy -q "SHOW SCHEMAS LIKE 'PUBLISH_SCH' IN DATABASE dev_db;"
           echo "✅ Infrastructure verified (publish_sch exists)"
 
+      - name: Upload Environment File
+        run: |
+          echo "📤 Uploading environment.yml..."
+          snow stage copy \
+            streamlit/environment.yml \
+            @dev_db.publish_sch.streamlit_stage/ \
+            --overwrite \
+            --connection streamlit-deploy
+          echo "✅ Environment configuration uploaded"
+
       - name: Upload Main App File
         run: |
           echo "📤 Uploading streamlit_app.py..."
@@ -136,6 +146,7 @@ jobs:
           echo "👤 Role: ACCOUNTADMIN"
           echo ""
           echo "📄 Deployed Files:"
+          echo "  • environment.yml (package dependencies)"
           echo "  • streamlit_app.py (homepage)"
           echo "  • pages/01-air-quality-trend-city-day-level.py"
           echo "  • pages/02-air-quality-trend-city-hour-level.py"
