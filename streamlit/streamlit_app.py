@@ -140,8 +140,8 @@ st.markdown("### 🔄 Data Freshness")
 try:
     freshness_query = """
     SELECT 
-        MAX(local_timestamp) AS latest_reading,
-        DATEDIFF('minute', MAX(local_timestamp), CURRENT_TIMESTAMP()) AS minutes_old
+        CONVERT_TIMEZONE('UTC', dev_db.publish_sch.GET_CURRENT_TIMEZONE(), MAX(utc_timestamp)) AS latest_reading,
+        DATEDIFF('minute', CONVERT_TIMEZONE('UTC', dev_db.publish_sch.GET_CURRENT_TIMEZONE(), MAX(utc_timestamp)), CURRENT_TIMESTAMP()) AS minutes_old
     FROM dev_db.publish_sch.air_quality_fact
     """
     freshness_result = session.sql(freshness_query).collect()[0]
@@ -159,6 +159,7 @@ try:
             
 except Exception as e:
     st.warning("Unable to check data freshness")
+    st.error(f"Error: {str(e)}")
 
 # Country breakdown
 st.markdown("---")
@@ -238,4 +239,4 @@ For issues or questions about this dashboard:
 
 # Footer
 st.markdown("---")
-st.caption("Air Quality Analytics Dashboard | Powered by Snowflake + Streamlit | Data updated hourly")
+st.caption(f"Air Quality Analytics Dashboard | Streamlit v{st.__version__} | Powered by Snowflake | Data updated hourly")

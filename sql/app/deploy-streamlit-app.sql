@@ -21,7 +21,7 @@ USE SCHEMA publish_sch;
 CREATE OR REPLACE STREAMLIT dev_db.publish_sch.air_quality_analytics
   ROOT_LOCATION = '@dev_db.publish_sch.streamlit_stage'
   MAIN_FILE = '/streamlit_app.py'
-  QUERY_WAREHOUSE = adhoc_wh
+  QUERY_WAREHOUSE = streamlit_wh
   TITLE = 'Air Quality Analytics - Multi-Country Monitoring'
   COMMENT = 'Real-time air quality dashboard with hourly updates';
 

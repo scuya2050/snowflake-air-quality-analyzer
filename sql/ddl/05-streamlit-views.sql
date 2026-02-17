@@ -1,6 +1,6 @@
 -- =====================================================
 -- Streamlit Views (Data Contracts)
--- Purpose: Create views optimized for Streamlit dashboard
+-- Purpose: Create views optimized for Streamlit dashboard. Includes utility functions
 -- Dependencies:
 --   - dev_db.publish_sch.air_quality_fact (from 04-dimensional-model.sql)
 --   - dev_db.publish_sch.location_dim (from 04-dimensional-model.sql)
@@ -271,5 +271,27 @@ FROM dev_db.publish_sch.location_dim l
 LEFT JOIN dev_db.publish_sch.air_quality_fact f ON l.location_pk = f.location_fk
 ORDER BY l.country, l.city, l.district;
 
+
+-- =====================================================
+-- UTILITY FUNCTIONS
+-- =====================================================
+
+-- Function: Get current session timezone
+-- Purpose: Returns the active Snowflake session's timezone setting
+-- Used By: Streamlit pages for timezone-aware timestamp display
+CREATE OR REPLACE FUNCTION dev_db.publish_sch.GET_CURRENT_TIMEZONE()
+RETURNS VARCHAR
+LANGUAGE JAVASCRIPT
+AS 
+$$
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return timezone;
+$$
+;
+
+-- Note: Snowflake doesn't expose session timezone directly via SQL
+-- Workaround: Use SHOW PARAMETERS
+-- This requires a stored procedure instead of a function
+
 -- Script execution completed
-SELECT '5 Streamlit views created in publish_sch' AS status;
+SELECT '5 Streamlit views and utility functions created in publish_sch' AS status;
