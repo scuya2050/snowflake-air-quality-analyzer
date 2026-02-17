@@ -7,37 +7,12 @@
 # You must explicitly specify ALL packages needed (including Snowpark, pandas, etc.)
 # =====================================================
 
-name: air_quality_streamlit
+name: sf_env
 channels:
   - snowflake
-
 dependencies:
-  # Core Python
-  - python=3.11
-  
-  # Streamlit framework (use Snowflake's default version)
   - streamlit=1.35.0
-  
-  # Snowflake packages (REQUIRED - used in all pages)
   - snowflake-snowpark-python
-  
-  # Data manipulation (REQUIRED - used in all pages)
   - pandas
-  
-  # Numeric operations (recommended with pandas)
-  - numpy
-  
-  # Optional enhancements (uncomment if needed):
-  # 
-  # Interactive visualizations (better than st.bar_chart/st.line_chart):
-  # - plotly
-  # 
-  # Advanced mapping (better than st.map):
-  # - pydeck
-  # 
-  # Declarative visualizations:
-  # - altair
-  # 
-  # Statistical analysis:
-  # - scipy
-  # - scikit-learn
+  - scikit-learn
+  - matplotlib
