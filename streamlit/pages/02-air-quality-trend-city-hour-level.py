@@ -53,7 +53,20 @@ if (city_option is not None and len(city_option) > 1):
     date_list = session.sql(date_query)
     date_option = st.selectbox('Select Date', date_list)
 
+# Pollutant selector (only show when date is selected)
+pollutant_option = None
 if (date_option is not None):
+    st.markdown("---")
+    
+    # Single select for pollutant
+    pollutant_option = st.selectbox(
+        '📊 Select Pollutant to Visualize:',
+        options=['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3'],
+        index=0,  # Default to PM2.5
+        help="Choose which pollutant to analyze over time"
+    )
+
+if (date_option is not None and pollutant_option is not None):
     trend_sql = f"""
     SELECT 
         aqi_hour AS Hour,
@@ -76,7 +89,12 @@ if (date_option is not None):
         sf_df,
         columns=['Hour','PM2.5','PM10','SO2','NO2','CO','O3'])
     
+    # Filter dataframe to only show selected pollutant
+    pd_df_filtered = pd_df[['Hour', pollutant_option]]
+    
     #draw charts
-    st.bar_chart(pd_df, x='Hour')
+    st.subheader(f"📈 {pollutant_option} Hourly Trend")
+    st.line_chart(pd_df_filtered, x='Hour', y=pollutant_option)
     st.divider()
-    st.line_chart(pd_df, x='Hour')
+    st.subheader(f"📊 {pollutant_option} Hourly Bar Chart")
+    st.bar_chart(pd_df_filtered, x='Hour', y=pollutant_option)

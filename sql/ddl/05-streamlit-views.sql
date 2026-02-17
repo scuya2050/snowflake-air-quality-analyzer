@@ -190,12 +190,12 @@ JOIN dev_db.publish_sch.date_dim d ON f.date_fk = d.date_pk;
 -- =====================================================
 -- 4. VIEW: vw_latest_district_aqi
 -- Purpose: Most recent AQI reading per district for map visualization
--- Used By: Streamlit Page 4 (Air Quality Map - Bubble viz)
+-- Used By: Legacy - consider using vw_daily_district_aqi instead
 -- Grain: One row per district (latest reading only)
 -- =====================================================
 
 CREATE OR REPLACE VIEW dev_db.publish_sch.vw_latest_district_aqi
-COMMENT = 'Latest AQI per district for Streamlit Page 4 - Map bubble visualization'
+COMMENT = 'Latest AQI per district for map visualization'
 AS
 WITH ranked_readings AS (
     SELECT 
@@ -243,7 +243,60 @@ FROM ranked_readings
 WHERE recency_rank = 1;
 
 -- =====================================================
--- 5. VIEW: vw_location_hierarchy
+-- 5. VIEW: vw_daily_district_aqi
+-- Purpose: Daily district-level AQI for filtered bubble map visualization
+-- Used By: Streamlit Page 4 (Air Quality Map - Filtered by City+Date)
+-- Grain: One row per district per date
+-- =====================================================
+
+CREATE OR REPLACE VIEW dev_db.publish_sch.vw_daily_district_aqi
+COMMENT = 'Daily district-level AQI for Streamlit Page 4 - City bubble map with date filter'
+AS
+SELECT 
+    -- Location
+    l.country,
+    l.city,
+    l.district,
+    l.location_name,
+    l.latitude,
+    l.longitude,
+    l.timezone_id,
+    
+    -- Time
+    DATE(f.local_timestamp) AS measurement_date,
+    
+    -- Daily aggregated pollutants
+    ROUND(AVG(f.pm2_5), 2) AS pm25_avg,
+    ROUND(AVG(f.pm10), 2) AS pm10_avg,
+    ROUND(AVG(f.co), 2) AS co_avg,
+    ROUND(AVG(f.no2), 2) AS no2_avg,
+    ROUND(AVG(f.o3), 2) AS o3_avg,
+    ROUND(AVG(f.so2), 2) AS so2_avg,
+    
+    -- Daily AQI (average of hourly readings)
+    ROUND(AVG(f.custom_aqi), 0) AS aqi,
+    
+    -- Most prominent pollutant of the day
+    MODE(f.prominent_pollutant) AS prominent_pollutant,
+    
+    -- Data quality
+    COUNT(*) AS hourly_readings_in_day,
+    SUM(f.readings_in_hour) AS total_raw_readings
+    
+FROM dev_db.publish_sch.air_quality_fact f
+JOIN dev_db.publish_sch.location_dim l ON f.location_fk = l.location_pk
+GROUP BY 
+    l.country,
+    l.city,
+    l.district,
+    l.location_name,
+    l.latitude,
+    l.longitude,
+    l.timezone_id,
+    DATE(f.local_timestamp);
+
+-- =====================================================
+-- 6. VIEW: vw_location_hierarchy
 -- Purpose: Location hierarchy for Streamlit dropdown filters
 -- Used By: Streamlit Pages 2, 3, 4 (Cascading dropdowns)
 -- Grain: One row per unique district
@@ -294,4 +347,4 @@ $$
 -- This requires a stored procedure instead of a function
 
 -- Script execution completed
-SELECT '5 Streamlit views and utility functions created in publish_sch' AS status;
+SELECT '6 Streamlit views and utility functions created in publish_sch' AS status;
