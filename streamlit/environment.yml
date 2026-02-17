@@ -10,8 +10,6 @@
 name: air_quality_streamlit
 channels:
   - snowflake
-  - conda-forge
-  - defaults
 
 dependencies:
   # Core Python
