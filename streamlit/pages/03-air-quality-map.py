@@ -63,7 +63,7 @@ if (date_option is not None):
     
     # Single select for pollutant
     pollutant_option = st.selectbox(
-        '📊 Select Pollutant to Visualize:',
+        'Select Pollutant to Visualize:',
         options=['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3'],
         index=0,  # Default to PM2.5
         help="Choose which pollutant to analyze over time"
@@ -72,7 +72,7 @@ if (date_option is not None):
 if (date_option is not None and pollutant_option is not None):
     trend_sql = f"""
     SELECT 
-        aqi_hour AS Hour,
+        aqi_hour::VARCHAR AS Hour,
         country,
         city,
         district,
@@ -91,26 +91,29 @@ if (date_option is not None and pollutant_option is not None):
       AND city = '{city_option}' 
       AND district = '{district_option}'
       AND DATE(measurement_time) = '{date_option}'
-    ORDER BY Hour
+    ORDER BY aqi_hour
     """
     sf_df = session.sql(trend_sql).collect()
 
     df = pd.DataFrame(sf_df, columns=['Hour','country','city','district','lat','lon','PM2.5','PM10','SO2','NO2','CO','O3','PROMINENT_POLLUTANT','AQI'])
     
-    # Create separate dataframes for different visualizations
-    df_aqi = df[['Hour', 'AQI']]
-    df_pollutant = df[['Hour', pollutant_option]]
-    df_map = df[['lat', 'lon']].drop_duplicates()
+    # Convert numeric columns to float
+    for col in ['PM2.5','PM10','SO2','NO2','CO','O3','AQI']:
+        df[col] = df[col].astype(float)
+
+    # Set Hour as index so charts render with hours on x-axis
+    df_aqi = df[['Hour', 'AQI']].set_index('Hour')
+    df_pollutant = df[['Hour', pollutant_option]].set_index('Hour')
 
     # AQI Trend Chart
-    st.subheader(f"📈 Hourly AQI Level")
-    st.line_chart(df_aqi, x="Hour", y="AQI", color='#FFA500')
+    st.subheader("Hourly AQI Level")
+    st.line_chart(df_aqi)
     
     st.divider()
     
     # Selected Pollutant Charts
-    st.subheader(f"📊 {pollutant_option} Hourly Trend")
-    st.line_chart(df_pollutant, x="Hour", y=pollutant_option, color='#1f77b4')
+    st.subheader(f"{pollutant_option} Hourly Trend")
+    st.line_chart(df_pollutant)
     
-    st.subheader(f"📊 {pollutant_option} Bar Chart")
-    st.bar_chart(df_pollutant, x="Hour", y=pollutant_option)
+    st.subheader(f"{pollutant_option} Bar Chart")
+    st.bar_chart(df_pollutant)

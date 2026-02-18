@@ -82,30 +82,30 @@ if (date_option is not None):
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            st.metric("🏙️ Districts", len(pd_df))
+            st.metric("Districts", len(pd_df))
         
         with col2:
             avg_aqi = pd_df['AQI'].mean()
-            st.metric("📊 Avg AQI", f"{avg_aqi:.0f}")
+            st.metric("Avg AQI", f"{avg_aqi:.0f}")
         
         with col3:
             max_aqi = pd_df['AQI'].max()
             worst_district = pd_df[pd_df['AQI'] == max_aqi]['District'].iloc[0]
-            st.metric("🔴 Highest AQI", f"{max_aqi:.0f}", delta=worst_district)
+            st.metric("Highest AQI", f"{max_aqi:.0f}", delta=worst_district)
         
         with col4:
             min_aqi = pd_df['AQI'].min()
             best_district = pd_df[pd_df['AQI'] == min_aqi]['District'].iloc[0]
-            st.metric("🟢 Lowest AQI", f"{min_aqi:.0f}", delta=best_district)
+            st.metric("Lowest AQI", f"{min_aqi:.0f}", delta=best_district)
         
         # Display bubble map
         st.markdown("---")
-        st.subheader(f"🗺️ {city_option}, {country_option} - {date_option}")
+        st.subheader(f"{city_option}, {country_option} - {date_option}")
         st.map(pd_df[['lat', 'lon', 'AQI']], size='AQI')
         
         # Display data table
         st.markdown("---")
-        st.subheader("📋 District Details")
+        st.subheader("District Details")
         st.dataframe(
             pd_df,
             column_config={

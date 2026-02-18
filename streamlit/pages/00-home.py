@@ -7,7 +7,7 @@ import streamlit as st
 from snowflake.snowpark.context import get_active_session
 
 # Main title
-st.title("🌍 Air Quality Analytics Dashboard")
+st.title("Air Quality Analytics Dashboard")
 
 # Introduction
 st.markdown("""
@@ -18,51 +18,51 @@ powered by hourly API data and a dimensional data model in Snowflake.
 
 ---
 
-### 📊 Available Dashboards:
+### Available Dashboards:
 
 Navigate using the **sidebar** to explore different views:
 
-#### 📈 **Daily City Trends** (Page 1)
+#### **Daily City Trends** (Page 1)
 - Compare **top 10 cities** by Air Quality Index (AQI)
 - View daily aggregated pollutant levels
 - Identify most polluted cities at a glance
 
-#### ⏰ **Hourly City Trends** (Page 2)
+#### **Hourly City Trends** (Page 2)
 - Analyze **intraday pollution patterns** by city
 - Interactive filters: Country → City → Date → Pollutant
 - Visualize hourly trend for selected pollutant
 
-#### 📍 **District Detail** (Page 3)
+#### **District Detail** (Page 3)
 - Deep dive into **specific district measurements**
 - AQI trend + selected pollutant hourly charts
 - Filters: Country → City → District → Date → Pollutant
 
-#### 🗺️ **City Bubble Map** (Page 4)
+#### **City Bubble Map** (Page 4)
 - Geographic **bubble map** of AQI across all districts in a city
 - Bubble size represents pollution intensity
 - Filters: Country → City → Date
 
 ---
 
-### 📋 Data Pipeline Architecture:
+### Data Pipeline Architecture:
 
 ```
-🔄 Hourly API Ingestion (GitHub Actions)
+Hourly API Ingestion (GitHub Actions)
     ↓
-📦 Stage Layer (Raw JSON)
+Stage Layer (Raw JSON)
     ↓
-🧹 Clean Layer (Deduplication, 30 min lag)
+Clean Layer (Deduplication, 30 min lag)
     ↓
-📊 Consumption Layer (Hourly aggregation)
+Consumption Layer (Hourly aggregation)
     ↓
-⭐ Dimensional Model (Star schema: Fact + Dimensions)
+Dimensional Model (Star schema: Fact + Dimensions)
     ↓
-📈 Streamlit Views (Optimized for visualization)
+Streamlit Views (Optimized for visualization)
 ```
 
 ---
 
-### 🌐 Current Data Coverage:
+### Current Data Coverage:
 """)
 
 # Get active session
@@ -79,7 +79,7 @@ try:
             FROM dev_db.publish_sch.vw_daily_city_agg
         """
         latest_date = session.sql(latest_date_query).collect()[0][0]
-        st.metric("📅 Latest Data", latest_date)
+        st.metric("Latest Data", latest_date)
 
     # Total cities monitored
     with col2:
@@ -88,7 +88,7 @@ try:
             FROM dev_db.publish_sch.vw_location_hierarchy
         """
         city_count = session.sql(city_count_query).collect()[0][0]
-        st.metric("🏙️ Cities Monitored", city_count)
+        st.metric("Cities Monitored", city_count)
 
     # Total districts monitored
     with col3:
@@ -97,7 +97,7 @@ try:
             FROM dev_db.publish_sch.vw_location_hierarchy
         """
         district_count = session.sql(district_count_query).collect()[0][0]
-        st.metric("📍 Districts Monitored", district_count)
+        st.metric("Districts Monitored", district_count)
 
     # Average current AQI
     with col4:
@@ -116,15 +116,15 @@ try:
         else:
             aqi_color = "🔴"
 
-        st.metric("🌡️ Avg Current AQI", f"{aqi_color} {int(avg_aqi)}")
+        st.metric("Avg Current AQI", f"{aqi_color} {int(avg_aqi)}")
 
 except Exception as e:
-    st.warning(f"⚠️ Unable to load metrics. Ensure data pipeline is running.")
+    st.warning("Unable to load metrics. Ensure data pipeline is running.")
     st.error(f"Error: {str(e)}")
 
 # Data freshness indicator
 st.markdown("---")
-st.markdown("### 🔄 Data Freshness")
+st.markdown("### Data Freshness")
 
 try:
     freshness_query = """
@@ -142,9 +142,9 @@ try:
         st.info(f"**Latest Reading:** {latest_reading}")
     with col2:
         if minutes_old < 90:
-            st.success(f"**Status:** ✅ Fresh ({minutes_old} minutes old)")
+            st.success(f"**Status:** Fresh ({minutes_old} minutes old)")
         else:
-            st.warning(f"**Status:** ⚠️ Stale ({minutes_old} minutes old)")
+            st.warning(f"**Status:** Stale ({minutes_old} minutes old)")
 
 except Exception as e:
     st.warning("Unable to check data freshness")
@@ -152,7 +152,7 @@ except Exception as e:
 
 # Country breakdown
 st.markdown("---")
-st.markdown("### 🌎 Country Coverage")
+st.markdown("### Country Coverage")
 
 try:
     country_query = """
@@ -183,7 +183,7 @@ except Exception as e:
 # Instructions
 st.markdown("---")
 st.markdown("""
-### 🚀 Getting Started
+### Getting Started
 
 1. **Select a dashboard** from the sidebar
 2. **Use filters** to drill down into specific locations
@@ -192,7 +192,7 @@ st.markdown("""
 
 ---
 
-### 📖 Understanding AQI Values:
+### Understanding AQI Values:
 
 | AQI Range | Category | Health Impact | Color |
 |-----------|----------|---------------|-------|
@@ -204,7 +204,7 @@ st.markdown("""
 
 ---
 
-### ⚙️ Technical Details:
+### Technical Details:
 
 - **Data Source:** WeatherAPI.com (Air Quality endpoint)
 - **Update Frequency:** Hourly via GitHub Actions
@@ -214,7 +214,7 @@ st.markdown("""
 
 ---
 
-👈 **Select a dashboard from the sidebar to begin!**
+Select a dashboard from the sidebar to begin.
 """)
 
 # Footer

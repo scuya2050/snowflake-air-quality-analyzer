@@ -60,7 +60,7 @@ if (date_option is not None):
     
     # Single select for pollutant
     pollutant_option = st.selectbox(
-        '📊 Select Pollutant to Visualize:',
+        'Select Pollutant to Visualize:',
         options=['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3'],
         index=0,  # Default to PM2.5
         help="Choose which pollutant to analyze over time"
@@ -69,7 +69,7 @@ if (date_option is not None):
 if (date_option is not None and pollutant_option is not None):
     trend_sql = f"""
     SELECT 
-        aqi_hour AS Hour,
+        aqi_hour::VARCHAR AS Hour,
         pm25_avg,
         pm10_avg,
         so2_avg,
@@ -80,7 +80,7 @@ if (date_option is not None and pollutant_option is not None):
     WHERE country = '{country_option}' 
       AND city = '{city_option}' 
       AND DATE(measurement_time) = '{date_option}'
-    ORDER BY Hour
+    ORDER BY aqi_hour
     """
     sf_df = session.sql(trend_sql).collect()
 
@@ -89,12 +89,16 @@ if (date_option is not None and pollutant_option is not None):
         sf_df,
         columns=['Hour','PM2.5','PM10','SO2','NO2','CO','O3'])
     
-    # Filter dataframe to only show selected pollutant
-    pd_df_filtered = pd_df[['Hour', pollutant_option]]
+    # Convert pollutant values to float
+    for col in ['PM2.5','PM10','SO2','NO2','CO','O3']:
+        pd_df[col] = pd_df[col].astype(float)
     
-    #draw charts
-    st.subheader(f"📈 {pollutant_option} Hourly Trend")
-    st.line_chart(pd_df_filtered, x='Hour', y=pollutant_option)
+    # Set Hour as index so charts render with hours on x-axis
+    pd_df_filtered = pd_df[['Hour', pollutant_option]].set_index('Hour')
+    
+    # Draw charts
+    st.subheader(f"{pollutant_option} Hourly Trend")
+    st.line_chart(pd_df_filtered)
     st.divider()
-    st.subheader(f"📊 {pollutant_option} Hourly Bar Chart")
-    st.bar_chart(pd_df_filtered, x='Hour', y=pollutant_option)
+    st.subheader(f"{pollutant_option} Hourly Bar Chart")
+    st.bar_chart(pd_df_filtered)
