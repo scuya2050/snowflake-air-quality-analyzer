@@ -89,6 +89,16 @@ jobs:
             --connection streamlit-deploy
           echo "✅ Main app uploaded"
 
+      - name: Upload Home Page
+        run: |
+          echo "📤 Uploading 00-home.py..."
+          snow stage copy \
+            streamlit/pages/00-home.py \
+            @dev_db.publish_sch.streamlit_stage/pages/ \
+            --overwrite \
+            --connection streamlit-deploy
+          echo "✅ Home page uploaded"
+
       - name: Upload Page Files
         run: |
           echo "📤 Uploading page files..."

@@ -28,6 +28,46 @@ USE WAREHOUSE adhoc_wh;
 -- =====================================================
 
 -- -----------------------------------------------------
+-- 0. UDF: format_location_name
+-- Purpose: Formats location names to proper title case with Spanish article rules
+-- Returns: Properly formatted location name
+-- Examples: 
+--   santa_anita → Santa Anita
+--   san_juan_de_lurigancho → San Juan de Lurigancho
+--   new_delhi → New Delhi
+-- -----------------------------------------------------
+CREATE OR REPLACE FUNCTION format_location_name(name VARCHAR)
+RETURNS VARCHAR
+LANGUAGE PYTHON
+RUNTIME_VERSION = '3.12'
+HANDLER = 'format_location_name'
+COMMENT = 'Formats location names with proper title case and Spanish article rules'
+AS $$
+def format_location_name(name):
+    if name is None:
+        return None
+    
+    # Replace underscores with spaces
+    name = name.replace('_', ' ')
+    
+    # Spanish articles and prepositions that should remain lowercase (except first word)
+    lowercase_words = {'de', 'del', 'la', 'las', 'el', 'los', 'y', 'e', 'a', 'al'}
+    
+    # Split into words and apply title case rules
+    words = name.split()
+    formatted_words = []
+    
+    for i, word in enumerate(words):
+        # First word is always title case, others check if they are articles
+        if i == 0 or word.lower() not in lowercase_words:
+            formatted_words.append(word.capitalize())
+        else:
+            formatted_words.append(word.lower())
+    
+    return ' '.join(formatted_words)
+$$;
+
+-- -----------------------------------------------------
 -- 1. UDF: prominent_pollutant
 -- Purpose: Identifies the pollutant with highest concentration
 -- Returns: Pollutant name (PM2.5, PM10, SO2, NO2, CO, O3)
@@ -99,8 +139,9 @@ $$;
 -- 4. DYNAMIC TABLE: aqi_consumption_dt
 -- Purpose: Analytical consumption layer with calculated metrics
 -- Grain: One row per HOUR per location (averaged from multiple readings)
--- Features: Hourly aggregation, local time hierarchy, EPA/DEFRA categories, data quality flags
+-- Features: Hourly aggregation, local time hierarchy, EPA/DEFRA categories, data quality flags, formatted location names
 -- Multi-Country: Supports all countries with automatic timezone conversion
+-- Location Formatting: Applies proper title case with Spanish article rules (e.g., San Juan de Lurigancho)
 -- =====================================================
 
 CREATE OR REPLACE DYNAMIC TABLE dev_db.consumption_sch.aqi_consumption_dt
@@ -115,8 +156,11 @@ WITH hourly_aggregated AS (
         DATE_TRUNC('HOUR', CONVERT_TIMEZONE(timezone_id, measurement_ts)) AS hour_timestamp_local,
         DATE_TRUNC('HOUR', measurement_ts) AS hour_timestamp_utc,
         
-        -- Location grouping
-        country, city, district, location_name, region, 
+        -- Location grouping (formatted with proper title case)
+        format_location_name(country) AS country,
+        format_location_name(city) AS city,
+        format_location_name(district) AS district,
+        location_name, region, 
         latitude, longitude, timezone_id,
         
         -- Aggregated Air Quality Metrics (average of all readings in the hour)

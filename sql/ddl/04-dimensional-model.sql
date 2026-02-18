@@ -53,12 +53,13 @@ FROM time_data;
 -- Grain: One row per unique (latitude, longitude)
 -- Key: HASH(latitude, longitude)
 -- Multi-Country: Contains timezone_id for local time conversion
+-- Location Names: Properly formatted with title case and Spanish article rules
 -- =====================================================
 
 CREATE OR REPLACE DYNAMIC TABLE dev_db.publish_sch.location_dim
     TARGET_LAG = '30 minutes'
     WAREHOUSE = transform_wh
-    COMMENT = 'Location dimension for multi-country air quality - supports geographic and timezone analysis'
+    COMMENT = 'Location dimension with properly formatted names (title case with Spanish article rules)'
 AS
 WITH location_data AS (
     SELECT 
