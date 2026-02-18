@@ -69,7 +69,7 @@ if (date_option is not None):
 if (date_option is not None and pollutant_option is not None):
     trend_sql = f"""
     SELECT 
-        aqi_hour::VARCHAR AS Hour,
+        TO_CHAR(aqi_hour, 'HH24:MI') AS Hour,
         pm25_avg,
         pm10_avg,
         so2_avg,
@@ -102,3 +102,6 @@ if (date_option is not None and pollutant_option is not None):
     st.divider()
     st.subheader(f"{pollutant_option} Hourly Bar Chart")
     st.bar_chart(pd_df_filtered)
+
+st.markdown("---")
+st.caption(f"Air Quality Analytics Dashboard | Streamlit v{st.__version__} | Powered by Snowflake | Data updated hourly")

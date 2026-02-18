@@ -39,3 +39,6 @@ pd_df = pd.DataFrame(
         columns=['Country','City','PM2.5','PM10','SO2','NO2','CO','O3','Primary Pollutant','AQI'])
 
 st.dataframe(pd_df)
+
+st.markdown("---")
+st.caption(f"Air Quality Analytics Dashboard | Streamlit v{st.__version__} | Powered by Snowflake | Data updated hourly")

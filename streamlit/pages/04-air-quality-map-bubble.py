@@ -121,4 +121,7 @@ if (date_option is not None):
             use_container_width=True
         )
     else:
-        st.warning(f"⚠️ No data available for {city_option} on {date_option}")
+        st.warning(f"No data available for {city_option} on {date_option}")
+
+st.markdown("---")
+st.caption(f"Air Quality Analytics Dashboard | Streamlit v{st.__version__} | Powered by Snowflake | Data updated hourly")
