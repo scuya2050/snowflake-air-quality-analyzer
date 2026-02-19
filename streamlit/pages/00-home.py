@@ -129,8 +129,8 @@ st.markdown("### Data Freshness")
 try:
     freshness_query = """
     SELECT 
-        MAX(utc_timestamp)::TIMESTAMP_LTZ AS latest_reading,
-        DATEDIFF('minute', MAX(utc_timestamp), CURRENT_TIMESTAMP()) AS minutes_old
+        CONVERT_TIMEZONE('UTC', dev_db.publish_sch.GET_CURRENT_TIMEZONE(), MAX(utc_timestamp)) AS latest_reading,
+        DATEDIFF('minute', CONVERT_TIMEZONE('UTC', dev_db.publish_sch.GET_CURRENT_TIMEZONE(), MAX(utc_timestamp)), CURRENT_TIMESTAMP()) AS minutes_old
     FROM dev_db.publish_sch.air_quality_fact
     """
     freshness_result = session.sql(freshness_query).collect()[0]
