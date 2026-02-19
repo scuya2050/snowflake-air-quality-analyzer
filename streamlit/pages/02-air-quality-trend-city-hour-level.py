@@ -69,7 +69,7 @@ if (date_option is not None):
 if (date_option is not None and pollutant_option is not None):
     trend_sql = f"""
     SELECT 
-        TO_CHAR(aqi_hour, 'HH24:MI') AS Hour,
+        LPAD(aqi_hour::VARCHAR, 2, '0') || ':00' AS Hour,
         pm25_avg,
         pm10_avg,
         so2_avg,
