@@ -40,7 +40,7 @@ jobs:
           curl -L -O https://sfc-repo.snowflakecomputing.com/snowflake-cli/linux_x86_64/3.15.0/snowflake-cli-3.15.0.x86_64.deb
           sudo dpkg -i snowflake-cli-3.15.0.x86_64.deb
           snow --version
-          echo "✅ Snowflake CLI installed"
+          echo "Snowflake CLI installed"
 
       - name: Configure Snowflake Connection
         env:
@@ -61,47 +61,47 @@ jobs:
             --no-interactive
           
           snow connection test --connection streamlit-deploy
-          echo "✅ Connection configured and tested"
+          echo "Connection configured and tested"
 
       - name: Verify Infrastructure Exists
         run: |
-          echo "🔍 Verifying Terraform-managed infrastructure..."
+          echo "Verifying Terraform-managed infrastructure..."
           snow sql --connection streamlit-deploy -q "SHOW SCHEMAS LIKE 'PUBLISH_SCH' IN DATABASE dev_db;"
-          echo "✅ Infrastructure verified (publish_sch exists)"
+          echo "Infrastructure verified (publish_sch exists)"
 
       - name: Upload Environment File
         run: |
-          echo "📤 Uploading environment.yml..."
+          echo "Uploading environment.yml..."
           snow stage copy \
             streamlit/environment.yml \
             @dev_db.publish_sch.streamlit_stage/ \
             --overwrite \
             --connection streamlit-deploy
-          echo "✅ Environment configuration uploaded"
+          echo "Environment configuration uploaded"
 
       - name: Upload Main App File
         run: |
-          echo "📤 Uploading streamlit_app.py..."
+          echo "Uploading streamlit_app.py..."
           snow stage copy \
             streamlit/streamlit_app.py \
             @dev_db.publish_sch.streamlit_stage/ \
             --overwrite \
             --connection streamlit-deploy
-          echo "✅ Main app uploaded"
+          echo "Main app uploaded"
 
       - name: Upload Home Page
         run: |
-          echo "📤 Uploading 00-home.py..."
+          echo "Uploading 00-home.py..."
           snow stage copy \
             streamlit/pages/00-home.py \
             @dev_db.publish_sch.streamlit_stage/pages/ \
             --overwrite \
             --connection streamlit-deploy
-          echo "✅ Home page uploaded"
+          echo "Home page uploaded"
 
       - name: Upload Page Files
         run: |
-          echo "📤 Uploading page files..."
+          echo "Uploading page files..."
           snow stage copy \
             streamlit/pages/01-air-quality-trend-city-day-level.py \
             @dev_db.publish_sch.streamlit_stage/pages/ \
@@ -125,48 +125,48 @@ jobs:
             @dev_db.publish_sch.streamlit_stage/pages/ \
             --overwrite \
             --connection streamlit-deploy
-          echo "✅ All page files uploaded"
+          echo "All page files uploaded"
 
       - name: Verify Uploaded Files
         run: |
-          echo "🔍 Verifying uploaded files..."
+          echo "Verifying uploaded files..."
           snow stage list-files \
             @dev_db.publish_sch.streamlit_stage \
             --connection streamlit-deploy
-          echo "✅ Files verified in stage"
+          echo "Files verified in stage"
 
       - name: Deploy Streamlit App
         run: |
-          echo "🎨 Creating/updating Streamlit app..."
+          echo "Creating/updating Streamlit app..."
           snow sql \
             --connection streamlit-deploy \
             --filename sql/app/deploy-streamlit-app.sql
-          echo "✅ Streamlit app deployed"
+          echo "Streamlit app deployed"
 
       - name: Deployment Summary
         run: |
           echo ""
-          echo "🎉 =================================="
-          echo "🎉 Streamlit Deployment Complete!"
-          echo "🎉 =================================="
+          echo "=================================="
+          echo "Streamlit Deployment Complete!"
+          echo "=================================="
           echo ""
-          echo "📱 Application: air_quality_analytics"
-          echo "📂 Location: dev_db.publish_sch (single front-facing schema)"
-          echo "⚡ Warehouse: adhoc_wh"
-          echo "👤 Role: ACCOUNTADMIN"
+          echo "Application: air_quality_analytics"
+          echo "Location: dev_db.publish_sch"
+          echo "Warehouse: adhoc_wh"
+          echo "Role: ACCOUNTADMIN"
           echo ""
-          echo "📄 Deployed Files:"
-          echo "  • environment.yml (package dependencies)"
-          echo "  • streamlit_app.py (homepage)"
-          echo "  • pages/01-air-quality-trend-city-day-level.py"
-          echo "  • pages/02-air-quality-trend-city-hour-level.py"
-          echo "  • pages/03-air-quality-map.py"
-          echo "  • pages/04-air-quality-map-bubble.py"
+          echo "Deployed Files:"
+          echo "  - environment.yml (package dependencies)"
+          echo "  - streamlit_app.py (navigation router)"
+          echo "  - pages/00-home.py"
+          echo "  - pages/01-air-quality-trend-city-day-level.py"
+          echo "  - pages/02-air-quality-trend-city-hour-level.py"
+          echo "  - pages/03-air-quality-map.py"
+          echo "  - pages/04-air-quality-map-bubble.py"
           echo ""
-          echo "📋 What Was Deployed:"
+          echo "Steps executed:"
           echo "  1. Uploaded files to @dev_db.publish_sch.streamlit_stage"
-          echo "  2. Executed sql/app/deploy-streamlit-app.sql"
-          echo "     - Created/updated app (air_quality_analytics)"
+          echo "  2. Ran sql/app/deploy-streamlit-app.sql"
           echo ""
           echo "💡 Architecture:"
           echo "  • Views: Deployed via deploy-pipeline.yml (data layer)"

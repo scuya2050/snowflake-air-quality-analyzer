@@ -2,7 +2,7 @@
 
 This directory contains Terraform configurations to deploy the complete Snowflake infrastructure for the Air Quality Data Pipeline project.
 
-## 📁 Structure
+## Structure
 
 ```
 terraform/
@@ -16,7 +16,7 @@ terraform/
 └── README.md                    # This file
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -66,7 +66,7 @@ terraform plan -var-file="environments/prod.tfvars"
 terraform apply -var-file="environments/prod.tfvars"
 ```
 
-## 📦 Resources Created
+## Resources Created
 
 ### Infrastructure
 - **1 Database** (`DEV_DB` or `PROD_DB`)
@@ -94,7 +94,7 @@ terraform apply -var-file="environments/prod.tfvars"
   - `CLEAN_FLATTEN_AQI_DT` - Pollutants transposed to columns
 - **1 Task** (`COPY_AIR_QUALITY_DATA`) - Scheduled data ingestion
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -123,7 +123,7 @@ task_schedule = "USING CRON 0 */2 * * * America/Lima"  # Every 2 hours
 enable_tasks  = true
 ```
 
-## 🔄 Common Operations
+## Common Operations
 
 ### View Current State
 ```powershell
@@ -138,7 +138,7 @@ terraform apply -var-file="environments/dev.tfvars"
 
 ### Destroy Infrastructure
 ```powershell
-# ⚠️ WARNING: This will delete all resources
+# WARNING: This will delete all resources
 terraform destroy -var-file="environments/dev.tfvars"
 ```
 
@@ -154,7 +154,7 @@ terraform output
 terraform output -json
 ```
 
-## 🔐 Security Best Practices
+## Security Best Practices
 
 1. **Never commit credentials**
    - Use environment variables
@@ -169,7 +169,7 @@ terraform output -json
    - Use appropriate Snowflake roles
    - Grant only necessary permissions
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### Authentication Issues
 ```powershell
@@ -193,7 +193,7 @@ terraform init -upgrade
 terraform force-unlock LOCK_ID
 ```
 
-## 📚 Next Steps
+## Next Steps
 
 After deploying infrastructure:
 

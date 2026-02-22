@@ -50,7 +50,7 @@ jobs:
           
           # Verify installation
           snow --version
-          echo "✅ Snowflake CLI installed"
+          echo "Snowflake CLI installed"
       
       - name: Configure Snowflake Connection
         env:
@@ -72,66 +72,66 @@ jobs:
           
           # Test connection
           snow connection test --connection deploy-conn
-          echo "✅ Connection configured and tested"
+          echo "Connection configured and tested"
       
       - name: Deploy DDL - Stage Layer
         run: |
-          echo "📋 Deploying Stage Layer..."
+          echo "Deploying Stage Layer..."
           snow sql -f sql/ddl/01-stage-layer.sql -c deploy-conn
-          echo "✅ Stage layer deployed"
+          echo "Stage layer deployed"
       
       - name: Deploy DDL - Clean Layer
         run: |
-          echo "📋 Deploying Clean Layer..."
+          echo "Deploying Clean Layer..."
           snow sql -f sql/ddl/02-clean-layer.sql -c deploy-conn
-          echo "✅ Clean layer deployed"
+          echo "Clean layer deployed"
       
       - name: Deploy DDL - Consumption Layer
         run: |
-          echo "📋 Deploying Consumption Layer..."
+          echo "Deploying Consumption Layer..."
           snow sql -f sql/ddl/03-consumption-layer.sql -c deploy-conn
-          echo "✅ Consumption layer deployed"
+          echo "Consumption layer deployed"
       
       - name: Deploy DDL - Dimensional Model
         run: |
-          echo "📋 Deploying Dimensional Model..."
+          echo "Deploying Dimensional Model..."
           snow sql -f sql/ddl/04-dimensional-model.sql -c deploy-conn
-          echo "✅ Dimensional model deployed"
+          echo "Dimensional model deployed"
 
       - name: Deploy DDL - Streamlit Views
         run: |
-          echo "📋 Deploying Streamlit Views..."
+          echo "Deploying Streamlit Views..."
           snow sql -f sql/ddl/05-streamlit-views.sql -c deploy-conn
-          echo "✅ Streamlit Views deployed"
+          echo "Streamlit Views deployed"
       
       - name: Deploy DML - Copy Task
         run: |
-          echo "📋 Deploying Copy Task..."
+          echo "Deploying Copy Task..."
           snow sql -f sql/dml/01-copy-task.sql -c deploy-conn
-          echo "✅ Copy task deployed"
+          echo "Copy task deployed"
       
       - name: Resume Copy Task
         if: ${{ github.event.inputs.resume_task == 'true' }}
         run: |
-          echo "▶️  Resuming Copy Task..."
+          echo "Resuming Copy Task..."
           snow sql -q "ALTER TASK dev_db.stage_sch.copy_air_quality_data RESUME;" -c deploy-conn
-          echo "✅ Copy task resumed (will run hourly)"
+          echo "Copy task resumed (will run hourly)"
       
       - name: Deployment Summary
         run: |
           echo "================================================"
-          echo "✅ Data Pipeline Deployment Complete!"
+          echo "Data Pipeline Deployment Complete!"
           echo "================================================"
-          echo "🗄️  DDL Scripts: 01 → 02 → 03 → 04 → 05"
-          echo "⚙️  DML Scripts: Copy task configured"
+          echo "DDL Scripts: 01 -> 02 -> 03 -> 04 -> 05"
+          echo "DML Scripts: Copy task configured"
           if [ "${{ github.event.inputs.resume_task }}" == "true" ]; then
-            echo "▶️  Task Status: RESUMED (ingesting data hourly)"
+            echo "Task Status: RESUMED (ingesting data hourly)"
           else
-            echo "⏸️  Task Status: SUSPENDED (manual resume required)"
+            echo "Task Status: SUSPENDED (manual resume required)"
           fi
-          echo "🚀 Pipeline ready for data ingestion"
+          echo "Pipeline ready for data ingestion"
           echo ""
-          echo "📝 Next Steps:"
+          echo "Next Steps:"
           echo "  1. Run deploy-streamlit.yml to deploy dashboard"
           if [ "${{ github.event.inputs.resume_task }}" != "true" ]; then
             echo "  2. Resume COPY task: ALTER TASK dev_db.stage_sch.copy_air_quality_data RESUME;"
