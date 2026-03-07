@@ -2,7 +2,7 @@
 
 An end-to-end data pipeline that pulls hourly air quality readings from WeatherAPI.com, loads them into Snowflake, and serves them through a native Streamlit dashboard.
 
-The pipeline currently covers Lima (Peru) across 43 districts, with sample data also available for Delhi, Singapore, and UK cities.
+The pipeline currently covers Lima (Peru) across 43 districts. Additional locations can be added without changes to the transformation layer.
 
 ---
 
@@ -178,9 +178,9 @@ The hourly aggregation dynamic table groups readings by location and hour, avera
 
 ---
 
-## Adding a new country/city
+## Adding a new location
 
-The pipeline is generic â€” it processes whatever is in `raw_aqi` regardless of country. To add a new location:
+The pipeline is generic — it processes whatever is in `raw_aqi` regardless of location. To add a new location:
 
 1. Add a function in `ingest_weather_api_data.py` following the pattern of `get_lima_air_quality_data()`
 2. Call it from `main()`
